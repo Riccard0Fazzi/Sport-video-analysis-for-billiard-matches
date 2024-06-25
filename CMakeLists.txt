@@ -1,15 +1,23 @@
 cmake_minimum_required(VERSION 2.8)
 project(BiliardVideoAnalysis)
 
-# Include directory for header files
-include_directories(include)
+# Link against OpenCV libraries
+target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})
+
+# Specify the C++ standard
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Find OpenCV package
-find_package(OpenCV 4 REQUIRED)
+find_package(OpenCV REQUIRED)
+
+# Source files
+set(SOURCES src/main.cpp)
 
 # Add executable
 add_executable(${PROJECT_NAME}
-        src/circleDetector.cpp)
+        src/main.cpp)
 
-# Link against OpenCV libraries
+# Link OpenCV libraries
 target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})
+
