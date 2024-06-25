@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
             break;
         }
     }
-
+	// Releaset the VideoCapture
     cap.release();
     cv::destroyAllWindows();
     return 0;
