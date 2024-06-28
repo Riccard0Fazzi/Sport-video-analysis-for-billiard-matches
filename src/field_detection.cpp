@@ -4,7 +4,7 @@
 // Task 1
 // Command line argument:
 /*
-/data/first_frames_videos
+../data/first_frames_videos
 *.png
 */
 
