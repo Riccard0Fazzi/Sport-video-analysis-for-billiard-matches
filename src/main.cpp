@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
 	// vector that stores each video frame
 	std::vector<cv::Mat> video_frames;
 	// temporary object to store each single frame
-	cv::Mat frame;		
+	cv::Mat frame;
 
 	// Read and store frames until video is complete
     while (cap.read(frame)) {
