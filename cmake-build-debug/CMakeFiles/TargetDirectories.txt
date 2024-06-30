@@ -1,3 +1,0 @@
-/Users/Administrator/CLionProjects/Sport-video-analysis-for-billiard-matches/cmake-build-debug/CMakeFiles/BiliardVideoAnalysis.dir
-/Users/Administrator/CLionProjects/Sport-video-analysis-for-billiard-matches/cmake-build-debug/CMakeFiles/edit_cache.dir
-/Users/Administrator/CLionProjects/Sport-video-analysis-for-billiard-matches/cmake-build-debug/CMakeFiles/rebuild_cache.dir
