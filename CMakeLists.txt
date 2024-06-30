@@ -16,7 +16,7 @@ set(SOURCES src/main.cpp)
 
 # Add executable
 add_executable(${PROJECT_NAME}
-        src/main.cpp)
+        src/ball_detection.cpp)
 
 # Link OpenCV libraries
 target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})

@@ -20,6 +20,6 @@ CMake Warning (dev) at CMakeLists.txt:5 (target_link_libraries):
   suppress this warning.
 This warning is for project developers.  Use -Wno-dev to suppress it.
 
--- Configuring done (0.3s)
+-- Configuring done (0.1s)
 -- Generating done (0.0s)
 -- Build files have been written to: /Users/Administrator/CLionProjects/Sport-video-analysis-for-billiard-matches/cmake-build-debug

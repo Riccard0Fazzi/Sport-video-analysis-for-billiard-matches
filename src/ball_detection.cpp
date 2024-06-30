@@ -1,4 +1,4 @@
-// Created by Tommaso Tubaldo on 06/06/24 - Hours: --
+// Created by Tommaso Tubaldo on 06/06/24 - Hours: 20
 #include <iostream>
 #include <opencv2/opencv.hpp>
 
@@ -16,17 +16,18 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }   // Check for the validity of the input image
 
-    // Grayscale conversion
-    Mat hsv_img;
-    cvtColor(img, hsv_img, COLOR_BGR2HSV_FULL);
-
     // Bilateral Filter after-conversion
     Mat filtered_gray_img;
-    bilateralFilter(hsv_img,filtered_gray_img,5,50,20);
+    bilateralFilter(img,filtered_gray_img,7,90,300);
 
-    std::string output_img_name1 = "/filtered_image.png";
-    imwrite(argv[2]+output_img_name1,filtered_gray_img);
+    std::string output_img_name13 = "/bilateralFilter.png";
+    imwrite(argv[2]+output_img_name13,filtered_gray_img);
 
+    // HSV conversion
+    Mat hsv_img;
+    cvtColor(filtered_gray_img, hsv_img, COLOR_BGR2HSV_FULL);
+
+    // TABLE SEGMENTATION
     // Create a histogram with 30 bins for Hue, 32 bins for Saturation, and 32 bins for Value
     int hBins = 30, sBins = 32, vBins = 32;
     int histSize[] = {hBins, sBins, vBins};
@@ -41,7 +42,7 @@ int main(int argc, char** argv) {
     int channels[] = {0, 1, 2};
 
     Mat hist;
-    calcHist(&filtered_gray_img,1,channels,Mat(),hist,3,histSize,ranges);
+    calcHist(&hsv_img,1,channels,Mat(),hist,3,histSize,ranges);
 
     // Find the bin with the maximum count
     double maxVal = 0;
@@ -54,24 +55,48 @@ int main(int argc, char** argv) {
     Vec3b mostCommonColorHSV(hBin * hStep, sBin * sStep, vBin * vStep);
 
     // Create a mask for the most common color
-    int h_thresh = 100;
+    int h_thresh = 70;
     int s_thresh = 50;
     int v_thresh = 50;
     Scalar lowerBound(mostCommonColorHSV[0] - h_thresh, mostCommonColorHSV[1]-s_thresh, mostCommonColorHSV[2]-v_thresh);
     Scalar upperBound(mostCommonColorHSV[0] + h_thresh, mostCommonColorHSV[1]+s_thresh, mostCommonColorHSV[2]+v_thresh);
     Mat mask;
-    inRange(filtered_gray_img, lowerBound, upperBound, mask);
+    inRange(hsv_img, lowerBound, upperBound, mask);
 
     // Invert the mask to remove the most common color
     cv::Mat invertedMask;
     cv::bitwise_not(mask, invertedMask);
 
+    std::string output_img_name11 = "/mask.png";
+    imwrite(argv[2]+output_img_name11,invertedMask);
+
     // Apply the mask to the original image
     cv::Mat result;
     img.copyTo(result, invertedMask);
 
-    std::string output_img_name8 = "/result.png";
+    std::string output_img_name123 = "/mask_before_erosion.png";
+    imwrite(argv[2]+output_img_name123,result);
+
+    std::string output_img_name8 = "/mask.png";
     imwrite(argv[2]+output_img_name8,result);
+
+    std::vector<Mat> res_channels;
+    split(result,res_channels);
+    threshold(res_channels[0],result,0,255,THRESH_BINARY);
+
+    std::string output_img_name9 = "/mask_binary.png";
+    imwrite(argv[2]+output_img_name9,result);
+
+    // Apply erosion to the mask
+    erode(result,result,getStructuringElement(MORPH_ELLIPSE,Size(3,3)),Point(-1,-1),5);
+    std::string output_img_name4 = "/eroded_mask.png";
+    imwrite(argv[2]+output_img_name4,result);
+
+    dilate(result,result,getStructuringElement(MORPH_ELLIPSE,Size(3,3)),Point(-1,-1),5);
+    // morphologyEx(result,result,MORPH_OPEN,getStructuringElement(MORPH_CROSS,Size(2,2)));
+
+    std::string output_img_name3 = "/opened_mask.png";
+    imwrite(argv[2]+output_img_name3,result);
 
     /*
     // Gamma Transform
@@ -85,24 +110,25 @@ int main(int argc, char** argv) {
     */
 
     Mat gray_img;
-    cvtColor(result,gray_img,COLOR_BGR2GRAY);
+    // cvtColor(result,gray_img,COLOR_BGR2GRAY);
+    result.copyTo(gray_img);
 
-    std::string output_img_name4 = "/gray_img.png";
-    imwrite(argv[2]+output_img_name4,gray_img);
+    std::string output_img_name21 = "/gray_img.png";
+    imwrite(argv[2]+output_img_name21,gray_img);
 
     // Canny edge detector as test
     Mat canny_img;
     int thresh1_canny = 300;
     Canny(gray_img,canny_img, thresh1_canny/2,thresh1_canny);
 
-    std::string output_img_name3 = "/cannyImg.png";
-    imwrite(argv[2]+output_img_name3,canny_img);
+    std::string output_img_name22 = "/cannyImg.png";
+    imwrite(argv[2]+output_img_name22,canny_img);
 
     // Hough circle transformation is applied
-    int thresh1 = 250;
-    int thresh2 = 25;
+    int thresh1 = 300;
+    int thresh2 = 10;
     std::vector<Vec3f> circles;
-    HoughCircles(gray_img,circles,HOUGH_GRADIENT,1,gray_img.rows/16,thresh1,thresh2,gray_img.rows/64, gray_img.rows/4);
+    HoughCircles(gray_img,circles,HOUGH_GRADIENT,1,static_cast<float>(gray_img.rows)/36,thresh1,thresh2,gray_img.rows/42,gray_img.rows/8);
 
     if (!circles.empty()) {
         for (int i = 0; i < circles.size(); i++) {
@@ -116,9 +142,9 @@ int main(int argc, char** argv) {
         Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
         int radius = cvRound(circles[i][2]);
         // draw the circle center
-        circle( img, center, 1, Scalar(0,255,0), 1, LINE_AA);
+        circle(img, center, 1, Scalar(0,255,0), 1, LINE_AA);
         // draw the circle outline
-        circle( img, center, radius, Scalar(0,0,255), 1, LINE_AA);
+        circle(img, center, radius, Scalar(0,0,255), 1, LINE_AA);
     }
 
     std::string output_img_name2 = "/circles.png";
