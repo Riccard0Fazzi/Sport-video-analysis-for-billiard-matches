@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="CMakePresetLoader">{
+  &quot;useNewFormat&quot;: true
+}</component>
+  <component name="CMakeReloadState">
+    <option name="reloaded" value="true" />
+  </component>
+  <component name="CMakeRunConfigurationManager">
+    <generated />
+  </component>
+  <component name="CMakeSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" ENABLED="true" CONFIG_NAME="Debug" />
+    </configurations>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="948c52e5-9aa5-406e-97f5-4634cd50793c" name="Changes" comment="Improvements on ball_detection.cpp&#10;Better table cloth segmentation&#10;Shadows attenuation&#10;Introduced the binary thresholding to the table mask&#10;Better tuning of HoughCircle" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="Git.Settings">
+    <option name="PUSH_AUTO_UPDATE" value="true" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectApplicationVersion">
+    <option name="ide" value="CLion" />
+    <option name="majorVersion" value="2023" />
+    <option name="minorVersion" value="3.4" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 5
+}</component>
+  <component name="ProjectId" id="2ibn0zH8rHEwerDQV0ElIh77M6y" />
+  <component name="ProjectLevelVcsManager">
+    <OptionsSetting value="false" id="Update" />
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "CMake Application.BiliardVideoAnalysis.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "main",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "advanced.settings",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RunManager">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="BiliardVideoAnalysis" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="$PROJECT_DIR$/data/Field_Masks $USER_HOME$/Documents/UNIPD/CSE/First_Year/Computer_Vision/Project/Detecting_Circles/results &quot;*.png&quot;" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="BiliardVideoAnalysis" TARGET_NAME="BiliardVideoAnalysis" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="BiliardVideoAnalysis" RUN_TARGET_NAME="BiliardVideoAnalysis">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="948c52e5-9aa5-406e-97f5-4634cd50793c" name="Changes" comment="" />
+      <created>1717232944332</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1717232944332</updated>
+      <workItem from="1717232945453" duration="3516000" />
+      <workItem from="1717708445704" duration="39000" />
+      <workItem from="1717708502003" duration="17612000" />
+      <workItem from="1718829506720" duration="9846000" />
+      <workItem from="1719393517858" duration="262000" />
+      <workItem from="1719396800091" duration="698000" />
+      <workItem from="1719588738897" duration="6970000" />
+      <workItem from="1719656972436" duration="24465000" />
+      <workItem from="1719767925897" duration="43000" />
+      <workItem from="1719767980073" duration="5000" />
+      <workItem from="1719768052183" duration="5000" />
+      <workItem from="1719768099151" duration="1840000" />
+      <workItem from="1719837172685" duration="17710000" />
+      <workItem from="1719958524794" duration="1874000" />
+      <workItem from="1719960437156" duration="6070000" />
+      <workItem from="1720036370427" duration="10969000" />
+      <workItem from="1720085023138" duration="92000" />
+      <workItem from="1720085125743" duration="31000" />
+    </task>
+    <task id="LOCAL-00001" summary="Changed project name and executables on CMake list">
+      <option name="closed" value="true" />
+      <created>1717708735457</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1717708735457</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Changed project name and executables on CMake list">
+      <option name="closed" value="true" />
+      <created>1719592206042</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1719592206043</updated>
+    </task>
+    <task id="LOCAL-00003" summary="New file ballDetector">
+      <option name="closed" value="true" />
+      <created>1719592527365</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1719592527365</updated>
+    </task>
+    <task id="LOCAL-00004" summary="New file ballDetector">
+      <option name="closed" value="true" />
+      <created>1719593472694</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1719593472694</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Improvements on ball_detection.cpp&#10;Better table cloth segmentation&#10;Shadows attenuation&#10;Introduced the binary thresholding to the table mask&#10;Better tuning of HoughCircle">
+      <option name="closed" value="true" />
+      <created>1719767712605</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1719767712605</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Improvements on ball_detection.cpp&#10;Better table cloth segmentation&#10;Shadows attenuation&#10;Introduced the binary thresholding to the table mask&#10;Better tuning of HoughCircle">
+      <option name="closed" value="true" />
+      <created>1720082784984</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1720082784984</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VCPKGProject">
+    <isAutomaticCheckingOnLaunch value="false" />
+    <isAutomaticFoundErrors value="true" />
+    <isAutomaticReloadCMake value="true" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+    <MESSAGE value="Changed project name and executables on CMake list" />
+    <MESSAGE value="New file ballDetector" />
+    <MESSAGE value="Improvements on ball_detection.cpp&#10;Better table cloth segmentation&#10;Shadows attenuation&#10;Introduced the binary thresholding to the table mask&#10;Better tuning of HoughCircle" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improvements on ball_detection.cpp&#10;Better table cloth segmentation&#10;Shadows attenuation&#10;Introduced the binary thresholding to the table mask&#10;Better tuning of HoughCircle" />
+  </component>
+</project>

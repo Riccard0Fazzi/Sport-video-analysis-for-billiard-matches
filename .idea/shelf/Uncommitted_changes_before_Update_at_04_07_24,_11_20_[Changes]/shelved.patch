@@ -1,0 +1,238 @@
+Index: src/ball_detection.cpp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>// Created by Tommaso Tubaldo on 06/06/24 - Hours: 20\n#include <iostream>\n#include <opencv2/opencv.hpp>\n#include <opencv2/core/utils/filesystem.hpp>\n\nusing namespace cv;\n\nvoid imageCropping(const Mat& img, Mat& dest);\nvoid contrastStretching(const Mat& img, Mat& dest, int brightness_increase);\nvoid colorBasedSegmentation(const Mat& img, Mat& dest, std::vector<int> HSV_thresholds);\n\nint main(int argc, char** argv) {\n    if (argc < 3) {\n        std :: cout << \"An image file and a image name with folder path should be provided!\";\n        return EXIT_FAILURE;\n    }   // Checks for the correctness of the input values\n\n    std::string path = argv[1];\n    std::string pattern = argv[3];\n    std::vector<cv::String> filenames;\n    utils::fs::glob(path,pattern,filenames);\n\n    // Loop for every image\n    for (size_t c = 0; c < filenames.size(); ++c) {\n        // Read the image\n        Mat img = imread(filenames[c], IMREAD_ANYCOLOR);\n        // Safety check on the image returned\n        if (img.empty()) // If filename is wrong, imread returns an empty Mat object\n        {\n            // Print an error message using cv::Error\n            std::cerr << \"Error: \" << cv::format(\"Failed to load image! Error code: %d\", cv::Error::StsError) << std::endl;\n            exit(0);\n        }\n\n        imageCropping(img,img);\n\n        // Bilateral Filter [d:7, sigmaColor:80, sigmaSpace:300]\n        Mat filtered_img;\n        bilateralFilter(img, filtered_img, 7, 80, 300);\n        //std::string output_img_name13 = \"/bilateralFilter.png\";\n        //imwrite(argv[2] + output_img_name13, filtered_img);\n\n        // Contrast stretching used to enhance dark regions, and hence obtain a correct segmentation\n        int brightness_increase = 50;\n        contrastStretching(filtered_img, filtered_img, brightness_increase);\n        //std::string output_img_name16 = \"/equalized_HSV.png\";\n        //imwrite(argv[2] + output_img_name16, filtered_img);\n\n        // Color-based segmentation applied to obtain the balls mask\n        std::vector<int> HSV_thresholds = {20, 60, 60};   // (last used -> [70,50,50])\n        Mat segmented_img;\n        colorBasedSegmentation(filtered_img, segmented_img, HSV_thresholds);\n        //std::string output_img_name8 = \"/mask.png\";\n        //imwrite(argv[2] + output_img_name8, segmented_img);\n\n        // Conversion to gray-scale and binary thresholding of the balls mask\n        cvtColor(segmented_img, segmented_img, COLOR_BGR2GRAY);\n        Mat binary_segmented_img;\n        threshold(segmented_img, binary_segmented_img, 0, 255, THRESH_BINARY);\n        //std::string output_img_name9 = \"/mask_binary.png\";\n        //imwrite(argv[2] + output_img_name9, binary_segmented_img);\n\n        // Morphological operators (CLOSING + OPENING) used to make more even the balls blobs\n        morphologyEx(binary_segmented_img, binary_segmented_img, MORPH_CLOSE,\n                     getStructuringElement(MORPH_ELLIPSE, Size(3, 3)), Point(-1, -1), 2);\n        // Apply erosion to the mask\n        erode(binary_segmented_img, binary_segmented_img, getStructuringElement(MORPH_ELLIPSE, Size(3, 3)),\n              Point(-1, -1), 3);\n        //std::string output_img_name4 = \"/eroded_mask.png\";\n        //imwrite(argv[2] + output_img_name4, binary_segmented_img);\n        dilate(binary_segmented_img, binary_segmented_img, getStructuringElement(MORPH_ELLIPSE, Size(3, 3)),\n               Point(-1, -1), 3);\n        // morphologyEx(result,result,MORPH_OPEN,getStructuringElement(MORPH_ELLIPSE,Size(3,3)),Point(-1,-1),3);\n        //std::string output_img_name3 = \"/opened_mask.png\";\n        //imwrite(argv[2] + output_img_name3, binary_segmented_img);\n\n        // CIRCLE DETECTION from the binary mask\n        // Canny edge detector as test\n        Mat canny_img;\n        int thresh1_canny = 300;\n        Canny(binary_segmented_img, canny_img, static_cast<float>(thresh1_canny) / 2, thresh1_canny);\n        //std::string output_img_name22 = \"/cannyImg.png\";\n        //imwrite(argv[2] + output_img_name22, canny_img);\n\n        // Hough circles transformation\n        double min_distance_between_circles = static_cast<double>(binary_segmented_img.cols) / 40;\n        int thresh1 = 300;\n        int thresh2 = 11;\n        double min_radius = static_cast<double>(std::max(binary_segmented_img.cols, binary_segmented_img.rows)) / 115;\n        double max_radius = static_cast<double>(std::max(binary_segmented_img.cols, binary_segmented_img.rows)) / 35;\n        std::vector<Vec3f> circles;\n        HoughCircles(binary_segmented_img, circles, HOUGH_GRADIENT, 1, min_distance_between_circles, thresh1, thresh2,\n                     min_radius, max_radius);\n\n        // Print the locations of the founded balls\n        if (!circles.empty()) {\n            for (int i = 0; i < circles.size(); i++) {\n                std::cout << circles[i, 1] << \", \" << circles[i, 2] << \", \" << circles[i, 3] << '\\n';\n            }\n        } else {\n            std::cout << \"No circles detected!!\";\n        }\n\n        // Visualize the detected balls in the original image\n        for (size_t i = 0; i < circles.size(); i++) {\n            Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));\n            int radius = cvRound(circles[i][2]);\n            // draw the circle center\n            circle(img, center, 1, Scalar(0, 255, 0), 1, LINE_AA);\n            // draw the circle outline\n            circle(img, center, radius, Scalar(0, 0, 255), 1, LINE_AA);\n        }\n\n        std::string output_img_name2 = \"/circles.png\";\n        imwrite(argv[2] + output_img_name2, img);  // Saving the image on the desired folder\n\n    }\n    return 0;\n}\n\nvoid imageCropping(const Mat& img, Mat& dest) {\n    // Convert the image to grayscale\n    Mat gray;\n    cvtColor(img,gray,COLOR_BGR2GRAY);\n\n    // Threshold the grayscale image to create a binary mask\n    Mat binary;\n    threshold(gray,binary,0,255,THRESH_BINARY_INV);\n\n    // Find contours in the binary mask\n    std::vector<std::vector<Point>> contours;\n    findContours(binary, contours,RETR_EXTERNAL,CHAIN_APPROX_SIMPLE);\n\n    // Find the bounding box of the largest contour\n    int largest_area = 0;\n    Rect bounding_box;\n    for (size_t i = 0; i < contours.size(); i++) {\n        double area = contourArea(contours[i]);\n        if (area > largest_area) {\n            largest_area = area;\n            bounding_box = boundingRect(contours[i]);\n        }\n    }\n\n    // Crop the image using the bounding box\n    dest = img(bounding_box);\n}\n\nvoid contrastStretching(const Mat& img, Mat& dest, int brightness_increase) {\n    // HSV conversion\n    Mat hsv_img;\n    cvtColor(img,hsv_img,COLOR_BGR2HSV_FULL);\n\n    // Split the HSV image into channels\n    std::vector<Mat> hsvChannels;\n    split(hsv_img,hsvChannels);\n\n    // Increase the brightness of the V channel\n    for (int y = 0; y < hsvChannels[2].rows; y++) {\n        for (int x = 0; x < hsvChannels[2].cols; x++) {\n            if (hsvChannels[2].at<uchar>(y,x) != 0) {\n                uchar& pixel = hsvChannels[2].at<uchar>(y, x);\n                pixel = saturate_cast<uchar>(pixel + brightness_increase * (255 - pixel) / 255);\n            }\n        }\n    }\n\n    // Merge the channels back into one image\n    Mat equalizedHsvImage;\n    merge(hsvChannels,hsv_img);\n\n    cvtColor(hsv_img,dest,COLOR_HSV2BGR_FULL);\n}\n\nvoid colorBasedSegmentation(const Mat& img, Mat& dest, std::vector<int> HSV_thresholds) {\n    // HSV conversion\n    Mat hsv_img;\n    cvtColor(img,hsv_img,COLOR_BGR2HSV_FULL);\n\n    // Create a histogram with 30 bins for Hue, 32 bins for Saturation, and 32 bins for Value\n    int h_bins = 30, s_bins = 32, v_bins = 32;\n    int hist_size[] = {h_bins, s_bins, v_bins};\n\n    // Hue varies from 0 to 179, Saturation and Value from 0 to 255\n    float h_range[] = {0, 180};\n    float s_range[] = {0, 256};\n    float v_range[] = {0, 256};\n    const float* ranges[] = {h_range, s_range, v_range};\n\n    // Use the 0-th, 1-st, and 2-nd channels\n    int channels[] = {0, 1, 2};\n\n    Mat hist;\n    calcHist(&hsv_img,1,channels,Mat(),hist,3,hist_size,ranges);\n\n    // Find the bin with the maximum count\n    double max_val = 0;\n    int max_idx[3] = {0, 0, 0};\n    minMaxIdx(hist, nullptr, &max_val, nullptr, max_idx);\n\n    // Convert the bin index to HSV color\n    int h_bin = max_idx[0], s_bin = max_idx[1], v_bin = max_idx[2];\n    float h_step = 180.0f / h_bins, s_step = 256.0f / s_bins, v_step = 256.0f / v_bins;\n    Vec3b most_common_color(h_bin * h_step, s_bin * s_step, v_bin * v_step);\n\n    // Create a mask for the most common color\n    Scalar lower_bound(most_common_color[0] - HSV_thresholds[0], most_common_color[1] - HSV_thresholds[1], most_common_color[2] - HSV_thresholds[2]);\n    Scalar upper_bound(most_common_color[0] + HSV_thresholds[0], most_common_color[1] + HSV_thresholds[1], most_common_color[2] + HSV_thresholds[2]);\n    Mat mask;\n    inRange(hsv_img,lower_bound,upper_bound,mask);\n\n    // Invert the mask to remove the most common color\n    Mat inverted_mask;\n    bitwise_not(mask,inverted_mask);\n\n    // Apply the mask to the original image\n    img.copyTo(dest,inverted_mask);\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/ball_detection.cpp b/src/ball_detection.cpp
+--- a/src/ball_detection.cpp	(revision c3ad962e87a2f7dd70b2a860e0c26dc9466f26e1)
++++ b/src/ball_detection.cpp	(date 1720084822790)
+@@ -21,7 +21,7 @@
+     utils::fs::glob(path,pattern,filenames);
+ 
+     // Loop for every image
+-    for (size_t c = 0; c < filenames.size(); ++c) {
++    for (int c = 0; c < filenames.size(); ++c) {
+         // Read the image
+         Mat img = imread(filenames[c], IMREAD_ANYCOLOR);
+         // Safety check on the image returned
+@@ -33,6 +33,9 @@
+         }
+ 
+         imageCropping(img,img);
++        std::string output_img_name13 = "/image_cropped";
++        std::string num = std::to_string(c);
++        imwrite(argv[2] + output_img_name13 + num + ".png", img);
+ 
+         // Bilateral Filter [d:7, sigmaColor:80, sigmaSpace:300]
+         Mat filtered_img;
+@@ -98,7 +101,7 @@
+                 std::cout << circles[i, 1] << ", " << circles[i, 2] << ", " << circles[i, 3] << '\n';
+             }
+         } else {
+-            std::cout << "No circles detected!!";
++            std::cout << "No circles detected!!\n";
+         }
+ 
+         // Visualize the detected balls in the original image
+@@ -111,41 +114,13 @@
+             circle(img, center, radius, Scalar(0, 0, 255), 1, LINE_AA);
+         }
+ 
+-        std::string output_img_name2 = "/circles.png";
+-        imwrite(argv[2] + output_img_name2, img);  // Saving the image on the desired folder
++        std::string output_img_name2 = "/circles";
++        imwrite(argv[2] + output_img_name2 + num + ".png",img);  // Saving the image on the desired folder
+ 
+     }
+     return 0;
+ }
+ 
+-void imageCropping(const Mat& img, Mat& dest) {
+-    // Convert the image to grayscale
+-    Mat gray;
+-    cvtColor(img,gray,COLOR_BGR2GRAY);
+-
+-    // Threshold the grayscale image to create a binary mask
+-    Mat binary;
+-    threshold(gray,binary,0,255,THRESH_BINARY_INV);
+-
+-    // Find contours in the binary mask
+-    std::vector<std::vector<Point>> contours;
+-    findContours(binary, contours,RETR_EXTERNAL,CHAIN_APPROX_SIMPLE);
+-
+-    // Find the bounding box of the largest contour
+-    int largest_area = 0;
+-    Rect bounding_box;
+-    for (size_t i = 0; i < contours.size(); i++) {
+-        double area = contourArea(contours[i]);
+-        if (area > largest_area) {
+-            largest_area = area;
+-            bounding_box = boundingRect(contours[i]);
+-        }
+-    }
+-
+-    // Crop the image using the bounding box
+-    dest = img(bounding_box);
+-}
+-
+ void contrastStretching(const Mat& img, Mat& dest, int brightness_increase) {
+     // HSV conversion
+     Mat hsv_img;
+Index: src/ball_detection_blob.cpp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/ball_detection_blob.cpp b/src/ball_detection_blob.cpp
+new file mode 100644
+--- /dev/null	(date 1720082799199)
++++ b/src/ball_detection_blob.cpp	(date 1720082799199)
+@@ -0,0 +1,145 @@
++// Created by Tommaso Tubaldo on 06/06/24 - Hours: --
++#include <iostream>
++#include <opencv2/opencv.hpp>
++
++using namespace cv;
++
++int main(int argc, char** argv) {
++    if (argc < 3) {
++        std :: cout << "An image file and a image name with folder path should be provided!";
++        return EXIT_FAILURE;
++    }   // Checks for the correctness of the input values
++
++    Mat img = imread(argv[1]);
++    if (img.empty()) {
++        std :: cout << "The image cannot be read!";
++        return EXIT_FAILURE;
++    }   // Check for the validity of the input image
++
++    // Bilateral Filter after-conversion
++    Mat filtered_gray_img;
++    bilateralFilter(img,filtered_gray_img,7,90,300);
++
++    std::string output_img_name13 = "/bilateralFilter.png";
++    imwrite(argv[2]+output_img_name13,filtered_gray_img);
++
++    // HSV conversion
++    Mat hsv_img;
++    cvtColor(filtered_gray_img, hsv_img, COLOR_BGR2HSV_FULL);
++
++    // TABLE SEGMENTATION
++    // Create a histogram with 30 bins for Hue, 32 bins for Saturation, and 32 bins for Value
++    int hBins = 30, sBins = 32, vBins = 32;
++    int histSize[] = {hBins, sBins, vBins};
++
++    // Hue varies from 0 to 179, Saturation and Value from 0 to 255
++    float h_range[] = {0, 180};
++    float s_range[] = {0, 256};
++    float v_range[] = {0, 256};
++    const float* ranges[] = {h_range, s_range, v_range};
++
++    // Use the 0-th, 1-st, and 2-nd channels
++    int channels[] = {0, 1, 2};
++
++    Mat hist;
++    calcHist(&hsv_img,1,channels,Mat(),hist,3,histSize,ranges);
++
++    // Find the bin with the maximum count
++    double maxVal = 0;
++    int maxIdx[3] = {0, 0, 0};
++    minMaxIdx(hist, nullptr, &maxVal, nullptr, maxIdx);
++
++    // Convert the bin index to HSV color
++    int hBin = maxIdx[0], sBin = maxIdx[1], vBin = maxIdx[2];
++    float hStep = 180.0f / hBins, sStep = 256.0f / sBins, vStep = 256.0f / vBins;
++    Vec3b mostCommonColorHSV(hBin * hStep, sBin * sStep, vBin * vStep);
++
++    // Create a mask for the most common color
++    int h_thresh = 70;
++    int s_thresh = 50;
++    int v_thresh = 50;
++    Scalar lowerBound(mostCommonColorHSV[0] - h_thresh, mostCommonColorHSV[1]-s_thresh, mostCommonColorHSV[2]-v_thresh);
++    Scalar upperBound(mostCommonColorHSV[0] + h_thresh, mostCommonColorHSV[1]+s_thresh, mostCommonColorHSV[2]+v_thresh);
++    Mat mask;
++    inRange(hsv_img, lowerBound, upperBound, mask);
++
++    // Invert the mask to remove the most common color
++    cv::Mat invertedMask;
++    cv::bitwise_not(mask, invertedMask);
++
++    std::string output_img_name11 = "/mask.png";
++    imwrite(argv[2]+output_img_name11,invertedMask);
++
++    // Apply the mask to the original image
++    cv::Mat result;
++    img.copyTo(result, invertedMask);
++
++    std::string output_img_name8 = "/mask.png";
++    imwrite(argv[2]+output_img_name8,result);
++
++    std::vector<Mat> res_channels;
++    split(result,res_channels);
++    threshold(res_channels[0],result,0,255,THRESH_BINARY);
++
++    std::string output_img_name9 = "/mask_binary.png";
++    imwrite(argv[2]+output_img_name9,result);
++
++    // Apply erosion to the mask
++    erode(result,result,getStructuringElement(MORPH_ELLIPSE,Size(3,3)),Point(-1,-1),5);
++    std::string output_img_name4 = "/eroded_mask.png";
++    imwrite(argv[2]+output_img_name4,result);
++
++    dilate(result,result,getStructuringElement(MORPH_ELLIPSE,Size(3,3)),Point(-1,-1),5);
++    // morphologyEx(result,result,MORPH_OPEN,getStructuringElement(MORPH_CROSS,Size(2,2)));
++
++    std::string output_img_name3 = "/opened_mask.png";
++    imwrite(argv[2]+output_img_name3,result);
++
++    // Setup SimpleBlobDetector parameters
++    SimpleBlobDetector::Params params;
++    // Change thresholds
++    params.minThreshold = 0;
++    params.maxThreshold = 255;
++    // Filter by Area.
++    params.filterByArea = true;
++    params.minArea = 100;
++    params.maxArea = 1000;
++    // Filter by Circularity
++    params.filterByCircularity = true;
++    params.minCircularity = 0.5;
++    params.maxCircularity = 1;
++    // Filter by Convexity
++    params.filterByConvexity = false;
++    params.minConvexity = 0.5;
++    params.maxConvexity = 1;
++    // Filter by Inertia
++    params.filterByInertia = false;
++    params.minInertiaRatio = 0.02;
++    params.maxInertiaRatio = 1;
++    // Minimum distance between blobs
++    params.minDistBetweenBlobs = static_cast<float>(result.rows)/40;
++    params.blobColor = 255;
++    params.thresholdStep = 254;
++
++    // Storage for blobs
++    std::vector<KeyPoint> keypoints;
++
++    // Set up detector with params
++    Ptr<SimpleBlobDetector> detector = SimpleBlobDetector::create(params);
++
++    // Detect blobs
++    detector->detect(result, keypoints);
++
++    // Draw detected blobs as red circles.
++    // DrawMatchesFlags::DRAW_RICH_KEYPOINTS flag ensures
++    // the size of the circle corresponds to the size of blob
++
++    Mat img_with_keypoints;
++    drawKeypoints(img, keypoints, img_with_keypoints, Scalar(0, 0, 255), DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
++
++
++    std::string output_img_name2 = "/blobs.png";
++    imwrite(argv[2]+output_img_name2,img_with_keypoints);  // Saving the image on the desired folder
++
++    return 0;
++}
+\ No newline at end of file
