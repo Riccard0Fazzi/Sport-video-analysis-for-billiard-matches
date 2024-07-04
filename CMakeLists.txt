@@ -12,11 +12,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 find_package(OpenCV REQUIRED)
 
 # Source files
-set(SOURCES src/main.cpp)
+#set(SOURCES src/main.cpp)
 
 # Add executable
 add_executable(${PROJECT_NAME}
-        src/ball_detection.cpp)
+        src/TrackingTest.cpp)
 
 # Link OpenCV libraries
 target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})
