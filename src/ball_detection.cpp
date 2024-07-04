@@ -118,34 +118,6 @@ int main(int argc, char** argv) {
     return 0;
 }
 
-void imageCropping(const Mat& img, Mat& dest) {
-    // Convert the image to grayscale
-    Mat gray;
-    cvtColor(img,gray,COLOR_BGR2GRAY);
-
-    // Threshold the grayscale image to create a binary mask
-    Mat binary;
-    threshold(gray,binary,0,255,THRESH_BINARY_INV);
-
-    // Find contours in the binary mask
-    std::vector<std::vector<Point>> contours;
-    findContours(binary, contours,RETR_EXTERNAL,CHAIN_APPROX_SIMPLE);
-
-    // Find the bounding box of the largest contour
-    int largest_area = 0;
-    Rect bounding_box;
-    for (size_t i = 0; i < contours.size(); i++) {
-        double area = contourArea(contours[i]);
-        if (area > largest_area) {
-            largest_area = area;
-            bounding_box = boundingRect(contours[i]);
-        }
-    }
-
-    // Crop the image using the bounding box
-    dest = img(bounding_box);
-}
-
 void contrastStretching(const Mat& img, Mat& dest, int brightness_increase) {
     // HSV conversion
     Mat hsv_img;
