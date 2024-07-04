@@ -205,14 +205,18 @@ int main (int argc, char** argv)
 
             }
         }
+        Rect bounding_box;
+        Mat dest;
+        bounding_box = boundingRect(contours[1]);
+        // Crop the image using the bounding box
+        dest = img(bounding_box);
 
         // save FIELD MASK
-        /*
         // Specify the output path
         std::string outputPath = "/Users/crucio/CLionProjects/ProjectWorkSpace/Field_Masks/"+to_string(c+1)+".png";
 
         // Save the image to the specified path
-        bool isSuccess = cv::imwrite(outputPath, img);
+        bool isSuccess = cv::imwrite(outputPath, dest);
         if (!isSuccess)
         {
             std::cerr << "Error: Could not save the image to the specified path." << std::endl;
@@ -220,7 +224,6 @@ int main (int argc, char** argv)
         }
 
         std::cout << "Image successfully saved to " << outputPath << std::endl;
-         */
 
 
 
