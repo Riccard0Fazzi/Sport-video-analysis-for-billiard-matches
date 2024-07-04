@@ -34,6 +34,7 @@ int main(int argc, char** argv) {
 		cv::waitKey(0);
 	}
     cv::destroyAllWindows();
+
     return 0;
 }
 
