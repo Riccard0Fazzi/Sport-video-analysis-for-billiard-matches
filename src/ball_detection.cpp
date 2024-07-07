@@ -40,7 +40,6 @@ int main(int argc, char** argv) {
         //imwrite(argv[2] + output_img_name13, filtered_img);
 
         // Contrast stretching used to enhance dark regions, and hence obtain a correct segmentation
-        int brightness_increase = 60;
         contrastStretching(filtered_img,filtered_img);
         std::string output_img_name16 = "/equalized_HSV";
         imwrite(argv[2] + output_img_name16 + num + ".png", filtered_img);
