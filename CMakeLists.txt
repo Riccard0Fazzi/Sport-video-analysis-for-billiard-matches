@@ -6,7 +6,6 @@ target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})
 
 # Specify the C++ standard
 set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Find OpenCV package
 find_package(OpenCV REQUIRED)

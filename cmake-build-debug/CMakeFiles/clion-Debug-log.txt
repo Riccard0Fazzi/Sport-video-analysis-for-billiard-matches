@@ -1,4 +1,4 @@
-/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/Applications/CLion.app/Contents/bin/ninja/mac/aarch64/ninja -G Ninja -S /Users/crucio/CLionProjects/Sport-video-analysis-for-billiard-matches -B /Users/crucio/CLionProjects/Sport-video-analysis-for-billiard-matches/cmake-build-debug
+/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/Applications/CLion.app/Contents/bin/ninja/mac/aarch64/ninja -G Ninja -S /Users/Administrator/CLionProjects/Sport-video-analysis-for-billiard-matches -B /Users/Administrator/CLionProjects/Sport-video-analysis-for-billiard-matches/cmake-build-debug
 CMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
   Compatibility with CMake < 3.5 will be removed from a future version of
   CMake.
@@ -20,7 +20,6 @@ CMake Warning (dev) at CMakeLists.txt:5 (target_link_libraries):
   suppress this warning.
 This warning is for project developers.  Use -Wno-dev to suppress it.
 
--- Found OpenCV: /opt/homebrew/Cellar/opencv/4.9.0_11 (found version "4.9.0") 
 -- Configuring done (0.1s)
 -- Generating done (0.0s)
--- Build files have been written to: /Users/crucio/CLionProjects/Sport-video-analysis-for-billiard-matches/cmake-build-debug
+-- Build files have been written to: /Users/Administrator/CLionProjects/Sport-video-analysis-for-billiard-matches/cmake-build-debug
