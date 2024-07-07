@@ -1,6 +1,6 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
-
+#include "../include/field_detection.h"
 
 int main(int argc, char** argv) {
     if (argc != 2) {
@@ -25,6 +25,12 @@ int main(int argc, char** argv) {
     }
     // Release the video capture object
     cap.release();
+	cv::Mat test = detectField(video_frames[0]);
+	std::cout << "DEBUG" << std::endl;	
+	cv::namedWindow("Test_Frames");
+	cv::imshow("Test_Frames",test);
+	cv::waitKey(0);
+	/* Show all video frames
 	cv::namedWindow("Test_Frames");
 	int i = 0;
 	while(i < video_frames.size())
@@ -34,7 +40,9 @@ int main(int argc, char** argv) {
 		cv::waitKey(0);
 	}
     cv::destroyAllWindows();
+*/
 
+    cv::destroyAllWindows();
     return 0;
 }
 

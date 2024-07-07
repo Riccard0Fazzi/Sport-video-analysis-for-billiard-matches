@@ -13,9 +13,18 @@ find_package(OpenCV REQUIRED)
 # Source files
 set(SOURCES src/main.cpp)
 
+# Include directories
+include_directories(
+    ${OpenCV_INCLUDE_DIRS}
+    include  # Add your include directory where field_detection.h is located
+)
+
 # Add executable
-add_executable(${PROJECT_NAME}
-        src/ball_detection.cpp)
+add_executable(BiliardVideoAnalysis
+    src/main.cpp
+    src/field_detection.cpp
+    # Include other source files if needed (ball_classification.cpp, tracking.cpp, etc.)
+)
 
 # Link OpenCV libraries
 target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})
