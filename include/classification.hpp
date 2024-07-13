@@ -1,9 +1,10 @@
 #ifndef CLASSIFICATION
 #define CLASSIFICATION
 
-#include <iostream>
 #include <opencv2/opencv.hpp>
-
+#include <opencv2/ml.hpp>
+#include <vector>
+#include <iostream>
 
 struct BilliardBall {
     int x;
@@ -18,8 +19,8 @@ struct BilliardBall {
         : x(x), y(y), width(width), height(height), ID(ID), image(img.clone()) {}
 };
 
-// Example usage
-BilliardBall ball(10, 20, 30, 30, 1, cv::imread("ball_image.jpg"));
+cv::Mat extractFeatures(const Mat& image) {
 
+int predict(const Ptr<ml::SVM>& svm, const Mat& image) {
 
 #endif // CLASSIFICATION

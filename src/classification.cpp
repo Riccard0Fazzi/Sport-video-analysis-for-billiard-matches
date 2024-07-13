@@ -1,7 +1,4 @@
-#include <opencv2/opencv.hpp>
-#include <opencv2/ml.hpp>
-#include <vector>
-#include <iostream>
+#include "../classification.hpp"
 
 
 Mat extractFeatures(const Mat& image) {

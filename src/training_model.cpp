@@ -7,15 +7,11 @@
 
 using namespace cv;
 
-Mat extractFeatures(const Mat& image);
-void loadData(std::vector<Mat>& images, std::vector<int>& labels);
-Ptr<ml::SVM> trainSVM(const std::vector<Mat>& trainData, const std::vector<int>& trainLabels);
-int predict(const Ptr<ml::SVM>& svm, const Mat& image);
-
 int main(int argc, char** argv) {
     // Load and prepare data
     std::vector<Mat> images;
     std::vector<int> labels;
+
     loadData(images, labels);
 
     // Train SVM
