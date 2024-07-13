@@ -13,7 +13,29 @@ Ptr<ml::SVM> trainSVM(const std::vector<Mat>& trainData, const std::vector<int>&
 int predict(const Ptr<ml::SVM>& svm, const Mat& image);
 
 int main(int argc, char** argv) {
+    // Load and prepare data
+    std::vector<Mat> images;
+    std::vector<int> labels;
+    loadData(images, labels);
 
+    // Train SVM
+    Ptr<ml::SVM> svm = trainSVM(images,labels);
+
+    // Save the trained SVM model
+    svm->save("svm_model.yml");
+
+    // Evaluate on test data
+    int correctPredictions = 0;
+    for (size_t i = 0; i < images.size(); ++i) {
+        int predictedLabel = predict(svm, images[i]);
+        if (predictedLabel == labels[i]) {
+            ++correctPredictions;
+        }
+    }
+
+    std::cout << "Accuracy: " << static_cast<double>(correctPredictions) / images.size() << std::endl;
+
+    return 0;
 }
 
 Mat extractFeatures(const Mat& image) {
