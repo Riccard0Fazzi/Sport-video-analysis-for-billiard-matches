@@ -212,19 +212,6 @@ void ballSelection(const Mat& img, const std::vector<Vec3f>& circle_vector, std:
     }
 }
 
-void drawCircles(const Mat& img, Mat& circles_img, const std::vector<Vec3f>& circles) {
-    img.copyTo(circles_img);
-    // Visualize the detected balls in the original image
-    for (size_t i = 0; i < circles.size(); i++) {
-        Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
-        int radius = cvRound(circles[i][2]);
-        // draw the circle center
-        circle(circles_img,center,1,Scalar(0, 255, 0),1, LINE_AA);
-        // draw the circle outline
-        circle(circles_img,center,radius,Scalar(0, 0, 255),1, LINE_AA);
-    }
-}
-
 void ballDetection(const Mat& img, std::vector<Vec3f> circles) {
     // Bilateral Filter [d:7, sigmaColor:60, sigmaSpace:300]
     Mat filtered_img;
@@ -376,4 +363,48 @@ void ballDetection(const Mat& img, std::vector<Vec3f> circles) {
 
     // Color-based ball selection and rejection of false positive samples   [for reference -> paper "3D reconstruction..."]
     ballSelection(img,detected_circles,circles,billiard_tables);
+}
+
+void drawCircles(const Mat& img, Mat& circles_img, const std::vector<Vec3f>& circles) {
+    img.copyTo(circles_img);
+    // Visualize the detected balls in the original image
+    for (size_t i = 0; i < circles.size(); i++) {
+        Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
+        int radius = cvRound(circles[i][2]);
+        // draw the circle center
+        circle(circles_img,center,1,Scalar(0, 255, 0),1, LINE_AA);
+        // draw the circle outline
+        circle(circles_img,center,radius,Scalar(0, 0, 255),1, LINE_AA);
+    }
+}
+
+void printCircles(const Mat& img, const std::vector<Vec3f> circles, std::vector<Mat> circles_img) {
+    Mat mask, ball_region;
+    for (int i = 0; i < circles.size(); ++i) {
+        // Define circle center and radius
+        Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
+        int radius = cvRound(circles[i][2]);
+
+        // Compute the circle mask and apply it to img
+        mask = Mat::zeros(img.size(),CV_8U);
+        ball_region = Mat::zeros(img.size(),CV_8U);
+        circle(mask,center,radius,Scalar(255),-1);
+        img.copyTo(ball_region,mask);
+
+        // Convert the image to grayscale
+        Mat gray_ball_region;
+        cvtColor(ball_region,gray_ball_region,COLOR_BGR2GRAY);
+
+        // Threshold the grayscale image to get a binary mask
+        Mat binary_ball_region;
+        threshold(gray_ball_region,binary_ball_region,1,255,THRESH_BINARY);
+
+        // Find the bounding box of the non-black region (subject)
+        Rect boundingBox = boundingRect(binary_ball_region);
+
+        // Crop the image using the bounding box coordinates
+        Mat cropped_ball_region = ball_region(boundingBox);
+
+        circles_img.emplace_back(cropped_ball_region);
+    }
 }
