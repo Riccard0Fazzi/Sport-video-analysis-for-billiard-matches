@@ -1,42 +1,8 @@
-// Created by Tommaso Tubaldo on 04/07/24.
-#include <iostream>
-#include <fstream>
-#include <sstream>
 #include <opencv2/opencv.hpp>
 #include <opencv2/ml.hpp>
+#include <vector>
+#include <iostream>
 
-using namespace cv;
-
-Mat extractFeatures(const Mat& image);
-void loadData(std::vector<Mat>& images, std::vector<int>& labels);
-Ptr<ml::SVM> trainSVM(const std::vector<Mat>& trainData, const std::vector<int>& trainLabels);
-int predict(const Ptr<ml::SVM>& svm, const Mat& image);
-
-int main(int argc, char** argv) {
-    // Load and prepare data
-    std::vector<Mat> images;
-    std::vector<int> labels;
-    loadData(images, labels);
-
-    // Train SVM
-    Ptr<ml::SVM> svm = trainSVM(images,labels);
-
-    // Save the trained SVM model
-    svm->save("svm_model.yml");
-
-    // Evaluate on test data
-    int correctPredictions = 0;
-    for (size_t i = 0; i < images.size(); ++i) {
-        int predictedLabel = predict(svm, images[i]);
-        if (predictedLabel == labels[i]) {
-            ++correctPredictions;
-        }
-    }
-
-    std::cout << "Accuracy: " << static_cast<double>(correctPredictions) / images.size() << std::endl;
-
-    return 0;
-}
 
 Mat extractFeatures(const Mat& image) {
     // Resize image to a fixed size
@@ -62,88 +28,55 @@ Mat extractFeatures(const Mat& image) {
     return hist.reshape(1, 1);
 }
 
-// Function to save features and labels to CSV
-void saveToCSV(const std::string& filename, const std::vector<Mat>& features, const std::vector<int>& labels) {
-    std::ofstream file(filename);
-
-    if (file.is_open()) {
-        for (size_t i = 0; i < features.size(); ++i) {
-            Mat row = features[i];
-            for (int j = 0; j < row.cols; ++j) {
-                file << row.at<float>(0, j);
-                if (j < row.cols - 1) {
-                    file << ",";
-                }
-            }
-            file << "," << labels[i] << "\n";
-        }
-        file.close();
-    } else {
-        std::cout << "Unable to open file for writing: " << filename << std::endl;
-    }
-}
-
-void loadData(std::vector<Mat>& images, std::vector<int>& labels) {
-    // Load images and labels
-    // For simplicity, assume images are stored in directories named after their labels
-    std::vector<std::string> categories = {"white", "black", "solid", "striped"};
-    for (int i = 0; i < categories.size(); ++i) {
-        std::string category = categories[i];
-        std::vector<std::string> filenames;
-        glob("path/to/data/" + category + "/*.jpg", filenames);
-        for (size_t j = 0; j < filenames.size(); ++j) {
-            Mat image = imread(filenames[j]);
-            if (!image.empty()) {
-                images.push_back(extractFeatures(image));
-                labels.push_back(i);
-            }
-        }
-    }
-}
-
-// Function to load features and labels from CSV
-void loadFromCSV(const std::string& filename, std::vector<Mat>& features, std::vector<int>& labels) {
-    std::ifstream file(filename);
-    std::string line, cell;
-
-    if (file.is_open()) {
-        while (getline(file, line)) {
-            std::stringstream lineStream(line);
-            std::vector<float> featureRow;
-            while (getline(lineStream, cell, ',')) {
-                featureRow.push_back(stof(cell));
-            }
-            int label = static_cast<int>(featureRow.back());
-            featureRow.pop_back();
-            Mat featureMat(1, featureRow.size(), CV_32F, featureRow.data());
-            features.push_back(featureMat.clone());
-            labels.push_back(label);
-        }
-        file.close();
-    } else {
-        std::cout << "Unable to open file for reading: " << filename << std::endl;
-    }
-}
-
-Ptr<ml::SVM> trainSVM(const std::vector<Mat>& trainData, const std::vector<int>& trainLabels) {
-    // Convert data to the right format
-    Mat trainingData;
-    vconcat(trainData, trainingData);
-    Mat labelsMat(trainLabels.size(), 1, CV_32S);
-    for (size_t i = 0; i < trainLabels.size(); ++i) {
-        labelsMat.at<int>(i, 0) = trainLabels[i];
-    }
-
-    // Train SVM
-    Ptr<ml::SVM> svm = ml::SVM::create();
-    svm->setType(ml::SVM::C_SVC);
-    svm->setKernel(ml::SVM::LINEAR);
-    svm->setTermCriteria(TermCriteria(TermCriteria::MAX_ITER, 100, 1e-6));
-    svm->train(trainingData, ml::ROW_SAMPLE, labelsMat);
-    return svm;
-}
 
 int predict(const Ptr<ml::SVM>& svm, const Mat& image) {
     Mat features = extractFeatures(image);
     return svm->predict(features);
 }
+
+
+
+int main() {
+    // Load the trained SVM model
+    cv::Ptr<cv::ml::SVM> svm = cv::ml::SVM::load("svm_trained_model.yml");
+
+    // Load test images
+    std::vector<cv::Mat> test_images;  // Load your test images
+
+    // Predict the class for each test image
+    for (const auto& test_image : test_images) {
+        std::vector<double> test_features = extract_features(test_image);
+
+        // Convert features to a cv::Mat
+        cv::Mat sample(1, test_features.size(), CV_32F);
+        for (size_t i = 0; i < test_features.size(); ++i) {
+            sample.at<float>(0, i) = static_cast<float>(test_features[i]);
+        }
+
+        // Predict the class
+        int prediction = svm->predict(sample);
+
+        // Output the prediction
+        switch (prediction) {
+            case 0:
+                std::cout << "Prediction: Full Ball" << std::endl;
+                break;
+            case 1:
+                std::cout << "Prediction: Half Ball" << std::endl;
+                break;
+            case 2:
+                std::cout << "Prediction: White Ball" << std::endl;
+                break;
+            case 3:
+                std::cout << "Prediction: Black Ball" << std::endl;
+                break;
+		    case 4:
+                std::cout << "Prediction: No Ball" << std::endl;
+                break;
+
+        }
+    }
+
+    return 0;
+}
+
