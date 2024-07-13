@@ -9,10 +9,11 @@ using namespace cv;
 
 int main(int argc, char** argv) {
     // Load and prepare data
-    std::vector<Mat> images;
-    std::vector<int> labels;
+	
+    std::vector<Mat> images; // this will be filled using loadData
+    std::vector<int> labels; // ""								""
 
-    loadData(images, labels);
+    loadData(images, labels); // upload the images for the training
 
     // Train SVM
     Ptr<ml::SVM> svm = trainSVM(images,labels);
@@ -87,7 +88,7 @@ void loadData(std::vector<Mat>& images, std::vector<int>& labels) {
     for (int i = 0; i < categories.size(); ++i) {
         std::string category = categories[i];
         std::vector<std::string> filenames;
-        glob("path/to/data/" + category + "/*.jpg", filenames);
+        glob("../data/" + category + "/*.png", filenames);
         for (size_t j = 0; j < filenames.size(); ++j) {
             Mat image = imread(filenames[j]);
             if (!image.empty()) {
