@@ -58,13 +58,13 @@ void ballSelection(const cv::Mat& img, const std::vector<cv::Vec3f>& circle_vect
 //                                   - Morphological operators (Closing + Opening)
 //                                   - Hough Circle Transform
 //                                   - Ball Selection
-void ballDetection(const cv::Mat& img, std::vector<cv::Vec3f> circles);
+void ballDetection(const cv::Mat& img, std::vector<cv::Vec3f>& circles);
 
 
 // Draws the circles present on the vector 'circles'.
 void drawCircles(const cv::Mat& img, cv::Mat& circles_img, const std::vector<cv::Vec3f>& circles);
 
 
-void printCircles(const cv::Mat& img, std::vector<cv::Vec3f> circles, std::vector<cv::Mat> circles_img);
+void printCircles(const cv::Mat& img, const std::vector<cv::Vec3f>& circles, int circles_img_size, std::vector<cv::Mat>& circles_img);
 
 #endif //BALL_DETECTION_H

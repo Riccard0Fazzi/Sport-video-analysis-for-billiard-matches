@@ -36,13 +36,24 @@ int main(int argc, char** argv) {
         std::vector<Vec3f> circles;
         ballDetection(img,circles);
 
+        std::vector<Mat> circles_images;
+        int circle_size = 100;
+        printCircles(img,circles,circle_size,circles_images);
+        std::cout << circles_images.size() << std::endl;
+
+        std::string output_img_name55;
+        for (int i = 0; i < circles_images.size(); i++) {
+            output_img_name55 = "/" + num + "_" + std::to_string(i);
+            imwrite(argv[2] + output_img_name55 + ".png",circles_images[i]);
+        }
+
         // Draw the detected circles
         Mat circles_img;
-        drawCircles(img,circles_img,circles);
+        //drawCircles(img,circles_img,circles);
 
         // Print the detected circles
         std::string output_img_name0 = "/circles";
-        imwrite(argv[2] + output_img_name0 + num + ".png",circles_img);
+        //imwrite(argv[2] + output_img_name0 + num + ".png",circles_img);
     }
     return 0;
 }
@@ -212,7 +223,7 @@ void ballSelection(const Mat& img, const std::vector<Vec3f>& circle_vector, std:
     }
 }
 
-void ballDetection(const Mat& img, std::vector<Vec3f> circles) {
+void ballDetection(const Mat& img, std::vector<Vec3f>& circles) {
     // Bilateral Filter [d:7, sigmaColor:60, sigmaSpace:300]
     Mat filtered_img;
     bilateralFilter(img,filtered_img,7,60,300);
@@ -244,125 +255,8 @@ void ballDetection(const Mat& img, std::vector<Vec3f> circles) {
     double min_radius = static_cast<double>(std::max(binary_segmented_img.cols, binary_segmented_img.rows)) / 115;
     double max_radius = static_cast<double>(std::max(binary_segmented_img.cols, binary_segmented_img.rows)) / 35;
     std::vector<Vec3f> detected_circles;
-    HoughCircles(binary_segmented_img,detected_circles,HOUGH_GRADIENT,1,min_distance_between_circles,thresh1,thresh2,
+    HoughCircles(binary_segmented_img,circles,HOUGH_GRADIENT,1,min_distance_between_circles,thresh1,thresh2,
                  min_radius, max_radius);
-
-    // Dataset of the ball colors for each table
-    std::vector<billiardSet> billiard_tables = {
-            {"Palette_1",{
-                                 {"White", Vec3b(45,68,248)},
-                                 {"Black", Vec3b(144,224,40)},
-                                 {"Yellow", Vec3b(18,200,168)},
-                                 {"Blue", Vec3b(78,56,160)},
-                                 {"Red", Vec3b(138,160,128)},
-                                 {"Purple", Vec3b(162, 136, 88)},
-                                 {"Orange", Vec3b(0, 192, 152)},
-                                 {"Green", Vec3b(114, 224, 72)},
-                                 {"Brown", Vec3b(12, 168, 112)}
-                         }},
-            {"Palette_2",{
-                                 {"White", Vec3b(42,8,232)},
-                                 {"Black", Vec3b(132,248,64)},
-                                 {"Yellow", Vec3b(12,96,248)},
-                                 {"Blue", Vec3b(150,184,136)},
-                                 {"Red", Vec3b(60,32,232)},
-                                 {"Purple", Vec3b(156,72,104)},
-                                 {"Orange", Vec3b(21,80,248)},
-                                 {"Green", Vec3b(102,168,88)},
-                                 {"Brown", Vec3b(0, 56,160)}
-                         }},
-            {"Palette_3",{
-                                 {"White", Vec3b(84,8,240)},
-                                 {"Black", Vec3b(132,128,48)},
-                                 {"Yellow", Vec3b(36,176,248)},
-                                 {"Blue", Vec3b(150,192,200)},
-                                 {"Red", Vec3b(0,16,240)},
-                                 {"Purple", Vec3b(168,136,136)},
-                                 {"Orange", Vec3b(18,160,244)},
-                                 {"Green", Vec3b(102,104,176)},
-                                 {"Brown", Vec3b(168,32,48)}
-                         }},
-            {"Palette_4",{
-                                 {"White", Vec3b(33,80,248)},
-                                 {"Black", Vec3b(6,32,56)},
-                                 {"Yellow", Vec3b(27,216,248)},
-                                 {"Blue", Vec3b(36,40,248)},
-                                 {"Red", Vec3b(138,88,128)},
-                                 {"Purple", Vec3b(6,16,232)},
-                                 {"Orange", Vec3b(6,224,232)},
-                                 {"Green", Vec3b(96,112,128)},
-                                 {"Brown", Vec3b(12,176,192)}
-                         }},
-            {"Palette_5",{
-                                 {"White", Vec3b(42,60,248)},
-                                 {"Black", Vec3b(138,248,48)},
-                                 {"Yellow", Vec3b(42,80,248)},
-                                 {"Blue", Vec3b(156,192,88)},
-                                 {"Red", Vec3b(138,112,80)},
-                                 {"Purple", Vec3b(168,120,88)},
-                                 {"Orange", Vec3b(42,104,208)},
-                                 {"Green", Vec3b(114,232,72)},
-                                 {"Brown", Vec3b(54,16,240)}
-                         }},
-            {"Palette_6",{
-                                 {"White", Vec3b(48,88,200)},
-                                 {"Black", Vec3b(144,224,40)},
-                                 {"Yellow", Vec3b(18,184,152)},
-                                 {"Blue", Vec3b(126,144,88)},
-                                 {"Red", Vec3b(0, 152,240)},
-                                 {"Purple", Vec3b(165,120,84)},
-                                 {"Orange", Vec3b(6,204,212)},
-                                 {"Green", Vec3b(126,232,56)},
-                                 {"Brown", Vec3b(54,56,160)}
-                         }},
-            {"Palette_7",{
-                                 {"White", Vec3b(42,16,248)},
-                                 {"Black", Vec3b(114,248,32)},
-                                 {"Yellow", Vec3b(36,64,224)},
-                                 {"Blue", Vec3b(126,248,56)},
-                                 {"Red", Vec3b(6,56,120)},
-                                 {"Purple", Vec3b(162,160,80)},
-                                 {"Orange", Vec3b(6,184,104)},
-                                 {"Green", Vec3b(108,248,88)},
-                                 {"Brown", Vec3b(18,24,224)}
-                         }},
-            {"Palette_8",{
-                                 {"White", Vec3b(42,40,248)},
-                                 {"Black", Vec3b(114,224,64)},
-                                 {"Yellow", Vec3b(24,192,232)},
-                                 {"Blue", Vec3b(0,104,216)},
-                                 {"Red", Vec3b(12,56,248)},
-                                 {"Purple", Vec3b(168,128,80)},
-                                 {"Orange", Vec3b(6,200,248)},
-                                 {"Green", Vec3b(108,248,64)},
-                                 {"Brown", Vec3b(42,0,248)}
-                         }},
-            {"Palette_9",{
-                                 {"White", Vec3b(36,64,232)},
-                                 {"Black", Vec3b(174,104,32)},
-                                 {"Yellow", Vec3b(24,232,232)},
-                                 {"Blue", Vec3b(144,128,160)},
-                                 {"Red", Vec3b(0,224,144)},
-                                 {"Purple", Vec3b(0,160,236)},
-                                 {"Orange", Vec3b(6,232,216)},
-                                 {"Green", Vec3b(96,136,120)},
-                                 {"Brown", Vec3b(12,128,216)}
-                         }},
-            {"Palette_10",{
-                                 {"White", Vec3b(36,48,248)},
-                                 {"Black", Vec3b(72,128,16)},
-                                 {"Yellow", Vec3b(24,160,152)},
-                                 {"Blue", Vec3b(150,224,96)},
-                                 {"Red", Vec3b(0,196,200)},
-                                 {"Purple", Vec3b(12,120,248)},
-                                 {"Orange", Vec3b(12,176,248)},
-                                 {"Green", Vec3b(102,184,56)},
-                                 {"Brown", Vec3b(12,176,136)}
-                         }}
-    };
-
-    // Color-based ball selection and rejection of false positive samples   [for reference -> paper "3D reconstruction..."]
-    ballSelection(img,detected_circles,circles,billiard_tables);
 }
 
 void drawCircles(const Mat& img, Mat& circles_img, const std::vector<Vec3f>& circles) {
@@ -378,9 +272,10 @@ void drawCircles(const Mat& img, Mat& circles_img, const std::vector<Vec3f>& cir
     }
 }
 
-void printCircles(const Mat& img, const std::vector<Vec3f> circles, std::vector<Mat> circles_img) {
+/*
+void printCircles(const Mat& img, const std::vector<Vec3f>& circles, int circles_img_size, std::vector<Mat>& circles_img) {
     Mat mask, ball_region;
-    for (int i = 0; i < circles.size(); ++i) {
+    for (int i = 0; i < circles.size(); i++) {
         // Define circle center and radius
         Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
         int radius = cvRound(circles[i][2]);
@@ -405,6 +300,66 @@ void printCircles(const Mat& img, const std::vector<Vec3f> circles, std::vector<
         // Crop the image using the bounding box coordinates
         Mat cropped_ball_region = ball_region(boundingBox);
 
-        circles_img.emplace_back(cropped_ball_region);
+        // Create a new black image of the desired fixed size
+        Size img_size (circles_img_size,circles_img_size);
+        circles_img.push_back(Mat::zeros(img_size, img.type()));
+
+        // Calculate the position to place the subject in the center
+        int xOffset = (img_size.width - boundingBox.width) / 2;
+        int yOffset = (img_size.height - boundingBox.height) / 2;
+
+        // Place the cropped subject in the center of the new image
+        Mat extended_ball_region;
+        cropped_ball_region.copyTo(extended_ball_region(Rect(xOffset, yOffset, boundingBox.width, boundingBox.height)));
+        circles_img.push_back(extended_ball_region);
+    }
+}
+ */
+
+void printCircles(const Mat& img, const std::vector<Vec3f>& circles, int circles_img_size, std::vector<Mat>& circles_img) {
+    Mat mask, ball_region;
+    for (size_t i = 0; i < circles.size(); ++i) {
+        // Define circle center and radius
+        Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
+        int radius = cvRound(circles[i][2]);
+
+        // Compute the circle mask and apply it to img
+        mask = Mat::zeros(img.size(), CV_8U);
+        ball_region = Mat::zeros(img.size(), img.type()); // Ensure ball_region has the same type as img
+        circle(mask, center, radius, Scalar(255), -1);
+        img.copyTo(ball_region, mask);
+
+        // Convert the image to grayscale
+        Mat gray_ball_region;
+        cvtColor(ball_region, gray_ball_region, COLOR_BGR2GRAY);
+
+        // Threshold the grayscale image to get a binary mask
+        Mat binary_ball_region;
+        threshold(gray_ball_region, binary_ball_region, 1, 255, THRESH_BINARY);
+
+        // Find the bounding box of the non-black region (subject)
+        Rect boundingBox = boundingRect(binary_ball_region);
+
+        // Crop the image using the bounding box coordinates
+        Mat cropped_ball_region = ball_region(boundingBox).clone(); // Ensure we clone the submatrix
+
+        // Create a new black image of the desired fixed size
+        Size img_size(circles_img_size, circles_img_size);
+        Mat new_circle_img = Mat::zeros(img_size, img.type()); // Ensure new_circle_img has the same type as img
+
+        // Calculate the position to place the subject in the center
+        int xOffset = (img_size.width - boundingBox.width) / 2;
+        int yOffset = (img_size.height - boundingBox.height) / 2;
+
+        // Ensure valid copy-to operation
+        if (xOffset >= 0 && yOffset >= 0 &&
+            boundingBox.width <= img_size.width && boundingBox.height <= img_size.height) {
+            // Place the cropped subject in the center of the new image
+            Mat roi(new_circle_img, Rect(xOffset, yOffset, boundingBox.width, boundingBox.height));
+            cropped_ball_region.copyTo(roi);
+        }
+
+        // Add the new image to the circles_img vector
+        circles_img.push_back(new_circle_img);
     }
 }
