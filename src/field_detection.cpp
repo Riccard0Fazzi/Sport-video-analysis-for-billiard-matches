@@ -7,7 +7,7 @@ using namespace std;
 
 
 
-cv::Mat field_detection(const cv::Mat& inputImage)
+std::vector<cv::Point> field_detection(const cv::Mat& inputImage)
 {
 
     // Safety check on the command line argument
@@ -33,8 +33,7 @@ cv::Mat field_detection(const cv::Mat& inputImage)
         // Read the image
         Mat src = inputImage.clone();
 
-        // PRE-PROCESSING
-        // -------------------------------------------------------------------------------------------------------------
+        // PRE-PROCESSING        // -------------------------------------------------------------------------------------------------------------
 
 
         // HSV conversion
@@ -259,6 +258,9 @@ cv::Mat field_detection(const cv::Mat& inputImage)
             cv::circle(img, point, 2, cv::Scalar(0, 255, 255), -1);  // Draw yellow circles at the intersection points
             cv::circle(img, point, 10, cv::Scalar(0, 0, 255), 1);   // Draw red circles at the intersection
         }
+
+		return center_points;
+}
         /*
         // Print the cluster centers
         std::cout << "Cluster centers:" << std::endl;
@@ -268,7 +270,7 @@ cv::Mat field_detection(const cv::Mat& inputImage)
             circle(img, p, 10, Scalar(0,0,255), 1);  // Draw red circles at the intersection
 
             std::cout << "Point(x=" << p.x << ", y=" << p.y << ")" << std::endl;
-        }*/
+        }
 
         vector<Point> tvp;
         if(center_points[3].x - center_points[2].x > center_points[1].x - center_points[0].x +20){
@@ -345,4 +347,5 @@ cv::Mat field_detection(const cv::Mat& inputImage)
 
     return dest;
 }
+*/
 

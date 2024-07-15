@@ -4,6 +4,8 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/utils/filesystem.hpp>
+#include <opencv2/imgproc.hpp>
+
 
 // Structure used to store balls names and colors
 struct billiardBall {
@@ -69,7 +71,7 @@ void ballSelection(const cv::Mat& img, const std::vector<cv::Vec3f>& circle_vect
 
 void ballDetection(const cv::Mat& img, std::vector<cv::Vec3f>& circles);
 
-std::vector<cv::Vec3f> ball_detection(const cv::Mat& inputImage);
+std::vector<cv::Vec3f> ball_detection(std::vector<cv::Point> field_points, const cv::Mat& inputImage);
 
 // Draws the circles present on the vector 'circles'.
 void drawCircles(const cv::Mat& img, cv::Mat& circles_img, const std::vector<cv::Vec3f>& circles);
