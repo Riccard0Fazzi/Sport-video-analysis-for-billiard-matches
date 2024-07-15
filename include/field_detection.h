@@ -2,9 +2,13 @@
 #define FIELD_DETECTION_H
 
 // Include necessary headers for OpenCV and other dependencies
-#include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/highgui/highgui.hpp>
+#include <iostream>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/utils/filesystem.hpp>
+
 
 // Declare function prototypes
 

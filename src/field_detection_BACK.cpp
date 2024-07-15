@@ -1,20 +1,39 @@
+// In this workspace for the Billiard project
+// Detection of the billiard table using HISTOGRAM THRESHOLDING
+// Created by crucio on 30/06/24.
+// Command line argument:
+/*
+/Users/crucio/CLionProjects/ProjectWorkSpace/Project_images
+*.png
+*/
 
-#include "../include/field_detection.h"
+#include <iostream>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/utils/filesystem.hpp>
 
 using namespace cv;
 using namespace std;
 
 
 
-
-cv::Mat field_detection(const cv::Mat& inputImage)
+int main (int argc, char** argv)
 {
+    // LOAD IMAGES
+    // -----------------------------------------------------------------------------------------------------------------
+
 
     // Safety check on the command line argument
-    if(inputImage.empty()) {
-        std::cout << "WARNING: An image shall be provided." << std::endl;
-        exit(0);
+    if(argc < 2) {
+        std::cout << "WARNING: An image filename shall be provided." << std::endl;
+        return EXIT_FAILURE;
     }
+    string path = argv[1];
+    string pattern = argv[2];
+    vector<cv::String> filenames;
+    utils::fs::glob(path, pattern, filenames);
 
     // Load Top-View image
     // Read the image
@@ -28,10 +47,27 @@ cv::Mat field_detection(const cv::Mat& inputImage)
     }
     // print
 
+    // LOOP FOR EVERY IMAGE IN THE DATASET
+    // -----------------------------------------------------------------------------------------------------------------
+
+
+    for (size_t c = 0; c < filenames.size(); ++c) {
+
+        // READ IMAGE
+        // -------------------------------------------------------------------------------------------------------------
 
 
         // Read the image
-        Mat src = inputImage.clone();
+        Mat src = imread(filenames[c], IMREAD_ANYCOLOR);
+        // Safety check on the image returned
+        if (src.empty()) // If filename is wrong, imread returns an empty Mat object
+        {
+            // Print an error message using cv::Error
+            std::cerr << "Error: " << cv::format("Failed to load image! Error code: %d", cv::Error::StsError) << std::endl;
+            exit(0);
+        }
+
+
 
         // PRE-PROCESSING
         // -------------------------------------------------------------------------------------------------------------
@@ -317,7 +353,7 @@ cv::Mat field_detection(const cv::Mat& inputImage)
         // Transform the points to the second image (image_b)
         cv::perspectiveTransform(points_to_transform, transformed_points, H);
         // Read the image
-        //Mat topView = imread("../data/Top_View.jpg", IMREAD_ANYCOLOR);
+        Mat topView = imread("../data/Top_View.jpg", IMREAD_ANYCOLOR);
 
         // Draw the points on image_a
         for (const auto& pt : transformed_points) {
@@ -339,9 +375,14 @@ cv::Mat field_detection(const cv::Mat& inputImage)
         // Wait for trackbar adjustments and key press
         char key = waitKey(0);
 
+        // Check if 'q' is pressed to quit, otherwise continue
+        if (key == 'q' || key == 'Q')
+            break;
+
         // Close all windows before moving to the next image
         destroyAllWindows();
+    }
 
-    return topView;
+    return EXIT_SUCCESS;
 }
 

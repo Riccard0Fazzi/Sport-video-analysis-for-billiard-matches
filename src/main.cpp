@@ -2,6 +2,7 @@
 #include <iostream>
 #include "../include/field_detection.h"
 
+using namespace cv;
 int main(int argc, char** argv) {
     if (argc != 2) {
         std::cerr << "Usage: " << argv[0] << " <video_path>" << std::endl;
@@ -25,22 +26,10 @@ int main(int argc, char** argv) {
     }
     // Release the video capture object
     cap.release();
-	cv::Mat test = detectField(video_frames[0]);
-	std::cout << "DEBUG" << std::endl;	
-	cv::namedWindow("Test_Frames");
-	cv::imshow("Test_Frames",test);
-	cv::waitKey(0);
-	/* Show all video frames
-	cv::namedWindow("Test_Frames");
-	int i = 0;
-	while(i < video_frames.size())
-	{
-		cv::imshow("Test_Frames",video_frames[i]);
-		i++;
-		cv::waitKey(0);
-	}
-    cv::destroyAllWindows();
-*/
+	
+	// now i should apply the field detection from the first frame of the selected video
+	// so i have to do something like field_detection(video_frames[0]);
+	Mat tV = field_detection(video_frames[0]);
 
     cv::destroyAllWindows();
     return 0;
