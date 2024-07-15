@@ -32,13 +32,15 @@ int main(int argc, char** argv) {
 		
 	// The first step involves to perform the field detection from the first frame of the selected video.
 	// All the steps are located in the fiel field_detection.cpp
-	// USAGE: Mat topView = field_detection(video_frames[0]);
-	// returns the top view of the billiard table
+	// USAGE: Points = field_detection(video_frames[0]);
+	// returns the points of the corners of the billiard tables
 	Mat cropped_table = field_detection(video_frames[0]);
 
 	// -- BALL DETECTION --
+	
+	// Takes as input the points of the corner of the billiard table, to detect the balls
 	ball_detection(cropped_table);	
-	// 
+	
 
     cv::destroyAllWindows();
     return 0;

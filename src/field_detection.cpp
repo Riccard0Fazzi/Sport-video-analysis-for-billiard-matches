@@ -336,7 +336,7 @@ cv::Mat field_detection(const cv::Mat& inputImage)
         // Show initial Canny image
         namedWindow("BILLIARD TABLE DETECTION");
         // Show initial Canny image
-        imshow("BILLIARD TABLE DETECTION", dest);
+        imshow("BILLIARD TABLE DETECTION", img);
         // Wait for trackbar adjustments and key press
         char key = waitKey(0);
 

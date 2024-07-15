@@ -24,7 +24,6 @@ struct billiardSet {
     std::vector<billiardBall> billiard_set;
 };
 
-void ball_detection(const cv::Mat& inputImage);
 
 // Computes the most common color in 'img' via histogram evaluation
 // in HSV color-space. Every color is considered, except for black,
@@ -67,8 +66,10 @@ void ballSelection(const cv::Mat& img, const std::vector<cv::Vec3f>& circle_vect
 //                                   - Morphological operators (Closing + Opening)
 //                                   - Hough Circle Transform
 //                                   - Ball Selection
+
 void ballDetection(const cv::Mat& img, std::vector<cv::Vec3f>& circles);
 
+std::vector<cv::Vec3f> ball_detection(const cv::Mat& inputImage);
 
 // Draws the circles present on the vector 'circles'.
 void drawCircles(const cv::Mat& img, cv::Mat& circles_img, const std::vector<cv::Vec3f>& circles);
