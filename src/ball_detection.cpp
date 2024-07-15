@@ -1,30 +1,21 @@
 // Created by Tommaso Tubaldo on 06/06/24 - Hours: 70
-#include <iostream>
-#include <opencv2/opencv.hpp>
-#include <opencv2/core/utils/filesystem.hpp>
 #include "ball_detection.hpp"
 
+// Structure used to store balls names and colors
+billiardBall::billiardBall(int x, int y, int width, int height, cv::Mat& image)
+    : x(x), y(y), width(width), height(height), image(image)
+{
+    // Optionally, you can add additional initialization logic here if needed
+}
+
+// ------------------------------
 using namespace cv;
 
-int main(int argc, char** argv) {
-    // Check if the input values are correct
-    if (argc < 3) {
-        std :: cout << "An image file and a image name with folder path should be provided!";
-        return EXIT_FAILURE;
-    }
-
-    std::string path = argv[1];
-    std::string pattern = argv[3];
-    std::vector<cv::String> filenames;
-    utils::fs::glob(path,pattern,filenames);
-
-    // Loop for every image
-    for (size_t c = 0; c < filenames.size(); ++c) {
-        std::string num = std::to_string(c);    // Numerical value for filename indexing
-
+void ball_detection(const cv::Mat& inputImage)
+{
         // Read the image
-        Mat img = imread(filenames[c], IMREAD_ANYCOLOR);
-        // Safety check on the image returned
+        Mat img = inputImage.clone();
+		// Safety check on the image returned
         if (img.empty()) // If filename is wrong, imread returns an empty Mat object
         {
             // Print an error message using cv::Error
@@ -39,23 +30,19 @@ int main(int argc, char** argv) {
         std::vector<Mat> circles_images;
         int circle_size = 100;
         printCircles(img,circles,circle_size,circles_images);
-        std::cout << circles_images.size() << std::endl;
-
-        std::string output_img_name55;
-        for (int i = 0; i < circles_images.size(); i++) {
-            output_img_name55 = "/" + num + "_" + std::to_string(i);
-            imwrite(argv[2] + output_img_name55 + ".png",circles_images[i]);
-        }
+        //std::cout << circles_images.size() << std::endl;
 
         // Draw the detected circles
         Mat circles_img;
-        //drawCircles(img,circles_img,circles);
-
+        drawCircles(img,circles_img,circles);
+			
+		namedWindow("Circles");
+		imshow("Circles",circles_img);
+		waitKey(0);
+		destroyAllWindows();
         // Print the detected circles
-        std::string output_img_name0 = "/circles";
+        //std::string output_img_name0 = "/circles";
         //imwrite(argv[2] + output_img_name0 + num + ".png",circles_img);
-    }
-    return 0;
 }
 
 void mostCommonColor(const Mat& img, Vec3b& most_common_color) {

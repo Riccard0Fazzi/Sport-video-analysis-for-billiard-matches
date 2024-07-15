@@ -151,7 +151,7 @@ cv::Mat field_detection(const cv::Mat& inputImage)
             line(corners[i], pt1, pt2, Scalar(255, 255, 255), 1, LINE_AA);
         }
 
-        /*
+        
         // Find contours and hierarchy
         vector<vector<Point>> contours;
         vector<Vec4i> hierarchy;
@@ -174,13 +174,14 @@ cv::Mat field_detection(const cv::Mat& inputImage)
             }
         }
 
-        // CROP FIELD MASK
+        //CROP FIELD MASK
         Rect bounding_box;
         Mat dest;
         bounding_box = boundingRect(contours[1]);
         // Crop the image using the bounding box
         dest = img(bounding_box);
 
+		/*
         // save FIELD MASK
         // Specify the output path
         std::string outputPath = "/Users/crucio/CLionProjects/ProjectWorkSpace/Field_Masks/"+to_string(c+1)+".png";
@@ -335,13 +336,13 @@ cv::Mat field_detection(const cv::Mat& inputImage)
         // Show initial Canny image
         namedWindow("BILLIARD TABLE DETECTION");
         // Show initial Canny image
-        imshow("BILLIARD TABLE DETECTION", topView);
+        imshow("BILLIARD TABLE DETECTION", dest);
         // Wait for trackbar adjustments and key press
         char key = waitKey(0);
 
         // Close all windows before moving to the next image
         destroyAllWindows();
 
-    return topView;
+    return dest;
 }
 

@@ -3,12 +3,20 @@
 
 #include <iostream>
 #include <opencv2/opencv.hpp>
+#include <opencv2/core/utils/filesystem.hpp>
 
 // Structure used to store balls names and colors
 struct billiardBall {
-    std::string color_name;
+	int x,y;
+	int width, height;
+    int ball_category_ID;
+	cv::Mat image;
+	std::string color_name;
     cv::Vec3b color_value;
+
+	billiardBall(int x, int y, int width, int height, cv::Mat& image);
 };
+
 
 // Structure used to contain each billiard sets of balls of different colors
 struct billiardSet {
@@ -16,6 +24,7 @@ struct billiardSet {
     std::vector<billiardBall> billiard_set;
 };
 
+void ball_detection(const cv::Mat& inputImage);
 
 // Computes the most common color in 'img' via histogram evaluation
 // in HSV color-space. Every color is considered, except for black,

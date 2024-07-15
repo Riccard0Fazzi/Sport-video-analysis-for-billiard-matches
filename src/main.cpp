@@ -1,6 +1,7 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
 #include "../include/field_detection.h"
+#include "../include/ball_detection.hpp"
 
 using namespace cv;
 int main(int argc, char** argv) {
@@ -26,10 +27,18 @@ int main(int argc, char** argv) {
     }
     // Release the video capture object
     cap.release();
-	
-	// now i should apply the field detection from the first frame of the selected video
-	// so i have to do something like field_detection(video_frames[0]);
-	Mat tV = field_detection(video_frames[0]);
+
+	// -- FIELD DETECTION --
+		
+	// The first step involves to perform the field detection from the first frame of the selected video.
+	// All the steps are located in the fiel field_detection.cpp
+	// USAGE: Mat topView = field_detection(video_frames[0]);
+	// returns the top view of the billiard table
+	Mat cropped_table = field_detection(video_frames[0]);
+
+	// -- BALL DETECTION --
+	ball_detection(cropped_table);	
+	// 
 
     cv::destroyAllWindows();
     return 0;
