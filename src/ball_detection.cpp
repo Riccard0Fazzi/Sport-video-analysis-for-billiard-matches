@@ -11,7 +11,7 @@ billiardBall::billiardBall(int x, int y, int width, int height, cv::Mat& image)
 // ------------------------------
 using namespace cv;
 
-std::vector<Vec3f> ball_detection(const cv::Mat& inputImage)
+std::vector<billiardBall> ball_detection(const cv::Mat& inputImage)
 {
 
 	Mat img = inputImage.clone();
@@ -31,20 +31,23 @@ std::vector<Vec3f> ball_detection(const cv::Mat& inputImage)
 	std::vector<Mat> circles_images;
 	int circle_size = 100;
 	printCircles(img,circles,circle_size,circles_images);
-	//std::cout << circles_images.size() << std::endl;
-
+	
 	// Draw the detected circles
 	Mat circles_img;
 	drawCircles(img,circles_img,circles);
-		
-	namedWindow("Circles");
+	std::vector<billiardBall> balls; // vector of object balls
+	
+	for(int i = 0; i < circles_images.size(); i++)
+	{
+		balls.emplace_back(circles[i][0],circles[i][1],circles[i][2],10,circles_images[i]);		
+	}
+	
+
 	imshow("Circles",circles_img);
 	waitKey(0);
 	destroyAllWindows();
-	// Print the detected circles
-	//std::string output_img_name0 = "/circles";
-	//imwrite(argv[2] + output_img_name0 + num + ".png",circles_img);
-	return circles;
+
+	return balls;
 }
 
 void mostCommonColor(const Mat& img, Vec3b& most_common_color) {

@@ -71,7 +71,7 @@ void ballSelection(const cv::Mat& img, const std::vector<cv::Vec3f>& circle_vect
 
 void ballDetection(const cv::Mat& img, std::vector<cv::Vec3f>& circles);
 
-std::vector<cv::Vec3f> ball_detection(const cv::Mat& inputImage);
+std::vector<billiardBall> ball_detection(const cv::Mat& inputImage);
 
 // Draws the circles present on the vector 'circles'.
 void drawCircles(const cv::Mat& img, cv::Mat& circles_img, const std::vector<cv::Vec3f>& circles);

@@ -32,6 +32,11 @@ std::vector<cv::Point> field_detection(const cv::Mat& inputImage, Mat & cropped_
 
         // Read the image
         Mat src = inputImage.clone();
+		namedWindow("CropField");
+		imshow("CropField",src);	
+		waitKey(0);
+
+
 
         // PRE-PROCESSING        // -------------------------------------------------------------------------------------------------------------
 
@@ -149,6 +154,9 @@ std::vector<cv::Point> field_detection(const cv::Mat& inputImage, Mat & cropped_
             // Draw the line on corners image
             line(corners[i], pt1, pt2, Scalar(255, 255, 255), 1, LINE_AA);
         }
+		imshow("CropField",canny);	
+		waitKey(0);
+
 
 
         // Create the FIELD MASK
@@ -163,6 +171,9 @@ std::vector<cv::Point> field_detection(const cv::Mat& inputImage, Mat & cropped_
 
             }
         }
+		imshow("CropField",img);	
+		waitKey(0);
+
 
         // FIND INTERSECTIONS
         vector<Point> kp;
@@ -230,6 +241,9 @@ std::vector<cv::Point> field_detection(const cv::Mat& inputImage, Mat & cropped_
             cv::circle(temp, point, 10, cv::Scalar(0, 0, 255), 1);   // Draw red circles at the intersection
         }
 
+		imshow("CropField",temp);	
+		waitKey(0);
+
 		int thickness = 1;
 		cv::line(temp, center_points[0], center_points[1], cv::Scalar(255), thickness); // Draw line 0-1
 		cv::line(temp, center_points[1], center_points[3], cv::Scalar(255), thickness); // Draw line 1-2
@@ -237,9 +251,13 @@ std::vector<cv::Point> field_detection(const cv::Mat& inputImage, Mat & cropped_
 		cv::line(temp, center_points[2], center_points[0], cv::Scalar(255), thickness); // Draw line 3-0
 
         findContours(temp, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE);
+		imshow("CropField",temp);	
+		waitKey(0);
 
 		// Draw the mask
         drawContours(temp, contours, 1, Scalar(255), FILLED);
+
+
 		img = inputImage.clone();
 
 		// Create the FIELD MASK
@@ -266,7 +284,7 @@ std::vector<cv::Point> field_detection(const cv::Mat& inputImage, Mat & cropped_
         // Crop the image using the bounding box
         cropped_field = img(bounding_box);
 
-		namedWindow("CropField");
+
 		imshow("CropField",cropped_field);
 		waitKey(0);
 
