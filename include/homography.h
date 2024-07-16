@@ -13,6 +13,8 @@
 /**
  * Apply the homography to a set of points
 	 */
-void homography(const std::vector<cv::Point>& points);
+cv::Mat homography(const std::vector<cv::Point>& points);
+//void mapPoints(const cv::Mat H, const std::vector<cv::Point2f> points);
+void mapPoints(const cv::Mat H, const std::vector<cv::Point> points, cv::Scalar color);
 #endif // HOMOGRAPHY
 

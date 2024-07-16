@@ -24,7 +24,8 @@ int main(int argc, char** argv) {
 	cv::Mat cropped_field;			   // cropped image to perform ball detection
 	std::vector<cv::Point> field_points;		   // vector to store the points of the contour of the field
 	std::vector<billiardBall> balls;   // vector to store object of balls
-
+	std::vector<cv::Point> balls_coordinates;
+	cv::Mat H;
 
 	// Read and store frames until video is complete
     while (cap.read(frame)) {
@@ -51,8 +52,13 @@ int main(int argc, char** argv) {
 	// PARAM: Mat object containing the cropped table
 	balls =	ball_detection(cropped_field);
 	// -- Field homography --
-	homography(field_points);
+	H = homography(field_points);
+
+	mapPoints(H,field_points,cv::Scalar(255,0,0));
+	// test homography for balls
+	for(int i = 0; i < balls.size(); i++)	balls_coordinates.emplace_back(balls[i].x,balls[i].y);	
 	
+	mapPoints(H,balls_coordinates, cv::Scalar(0,255,0));
 
     cv::destroyAllWindows();
     return 0;
