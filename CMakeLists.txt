@@ -11,7 +11,7 @@ set(CMAKE_CXX_STANDARD 11)
 find_package(OpenCV REQUIRED)
 
 # Source files
-set(SOURCES src/main.cpp)
+set(SOURCES src/main2.cpp)
 
 # Include directories
 include_directories(
@@ -24,7 +24,7 @@ add_executable(BiliardVideoAnalysis
     src/field_detection.cpp
 	src/ball_detection.cpp
 	src/homography.cpp
-    src/main.cpp
+    src/main2.cpp
     # Include other source files if needed (ball_classification.cpp, tracking.cpp, etc.)
 )
 
