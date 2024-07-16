@@ -7,7 +7,7 @@ using namespace std;
 
 
 
-std::vector<cv::Point> field_detection(const cv::Mat& inputImage)
+std::vector<cv::Point> field_detection(const cv::Mat& inputImage, Mat & cropped_field)
 {
 
     // Safety check on the command line argument
@@ -77,7 +77,7 @@ std::vector<cv::Point> field_detection(const cv::Mat& inputImage)
         int v_thresh = 80;//80
         Scalar lowerBound(mostCommonColorHSV[0] - h_thresh, mostCommonColorHSV[1]-s_thresh, mostCommonColorHSV[2]-v_thresh);
         Scalar upperBound(mostCommonColorHSV[0] + h_thresh, mostCommonColorHSV[1]+s_thresh, mostCommonColorHSV[2]+v_thresh);
-        Mat mask;
+		cv::Mat mask;
         inRange(filtered_gray_img, lowerBound, upperBound, mask);
 
         // Invert the mask to remove the most common color
@@ -150,15 +150,6 @@ std::vector<cv::Point> field_detection(const cv::Mat& inputImage)
             line(corners[i], pt1, pt2, Scalar(255, 255, 255), 1, LINE_AA);
         }
 
-        
-        // Find contours and hierarchy
-        vector<vector<Point>> contours;
-        vector<Vec4i> hierarchy;
-        findContours(canny, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE);
-
-        // Draw the mask
-        canny.setTo(cv::Scalar(0, 0, 0));
-        drawContours(canny, contours, 1, Scalar(255), FILLED);
 
         // Create the FIELD MASK
 
@@ -173,32 +164,7 @@ std::vector<cv::Point> field_detection(const cv::Mat& inputImage)
             }
         }
 
-        //CROP FIELD MASK
-        Rect bounding_box;
-        Mat dest;
-        bounding_box = boundingRect(contours[1]);
-        // Crop the image using the bounding box
-        dest = img(bounding_box);
-
-		/*
-        // save FIELD MASK
-        // Specify the output path
-        std::string outputPath = "/Users/crucio/CLionProjects/ProjectWorkSpace/Field_Masks/"+to_string(c+1)+".png";
-
-        // Save the image to the specified path
-        bool isSuccess = cv::imwrite(outputPath, dest);
-        if (!isSuccess)
-        {
-            std::cerr << "Error: Could not save the image to the specified path." << std::endl;
-            return -1;
-        }
-
-        std::cout << "Image successfully saved to " << outputPath << std::endl;
-         */
-
-
         // FIND INTERSECTIONS
-
         vector<Point> kp;
         for (int i = 0; i < corners[0].rows; i++) {
             for (int j = 0; j < corners[0].cols; j++) {
@@ -251,13 +217,58 @@ std::vector<cv::Point> field_detection(const cv::Mat& inputImage)
             std::cout << "Point(x=" << point.x << ", y=" << point.y << ")" << std::endl;
         }
 
+
+		cv::Mat temp = cv::Mat::zeros(img.size(), CV_8UC1);
+		vector<vector<Point>> contours;
+		vector<Vec4i> hierarchy;
+
         // SHOW OUTPUT
         // Assuming 'img' is defined and used for display
         // Draw circles for the first point in center_points
         for (const auto& point : center_points) {
-            cv::circle(img, point, 2, cv::Scalar(0, 255, 255), -1);  // Draw yellow circles at the intersection points
-            cv::circle(img, point, 10, cv::Scalar(0, 0, 255), 1);   // Draw red circles at the intersection
+            cv::circle(temp, point, 2, cv::Scalar(255), -1);  // Draw yellow circles at the intersection points
+            cv::circle(temp, point, 10, cv::Scalar(0, 0, 255), 1);   // Draw red circles at the intersection
         }
+
+		int thickness = 1;
+		cv::line(temp, center_points[0], center_points[1], cv::Scalar(255), thickness); // Draw line 0-1
+		cv::line(temp, center_points[1], center_points[3], cv::Scalar(255), thickness); // Draw line 1-2
+		cv::line(temp, center_points[3], center_points[2], cv::Scalar(255), thickness); // Draw line 2-3
+		cv::line(temp, center_points[2], center_points[0], cv::Scalar(255), thickness); // Draw line 3-0
+
+        findContours(temp, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE);
+
+		// Draw the mask
+        drawContours(temp, contours, 1, Scalar(255), FILLED);
+		img = inputImage.clone();
+
+		// Create the FIELD MASK
+
+        for (size_t u = 0; u < img.rows; u++ ){
+            for (size_t v = 0; v < img.cols; v++ ){
+                if(temp.at<uchar>(u,v)<255){
+                    img.at<Vec3b>(u,v)[0] = 0;
+                    img.at<Vec3b>(u,v)[1] = 0;
+                    img.at<Vec3b>(u,v)[2] = 0;
+                }
+
+            }
+        }
+
+		//namedWindow("masked_field");
+		//imshow("masked_field",img);
+		//waitKey(0);
+
+
+		//CROP FIELD MASK
+        Rect bounding_box;
+        bounding_box = boundingRect(contours[1]);
+        // Crop the image using the bounding box
+        cropped_field = img(bounding_box);
+
+		namedWindow("CropField");
+		imshow("CropField",cropped_field);
+		waitKey(0);
 
 		return center_points;
 }

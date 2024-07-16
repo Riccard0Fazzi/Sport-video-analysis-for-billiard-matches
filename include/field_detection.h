@@ -19,7 +19,7 @@
  * @param inputImage The input image in which the field is to be detected.
  * @return A binary mask image where the detected field region is marked.
  */
-std::vector<cv::Point> field_detection(const cv::Mat& inputImage);
+std::vector<cv::Point> field_detection(const cv::Mat& inputImage, cv::Mat& mask);
 
 #endif // FIELD_DETECTION_H
 

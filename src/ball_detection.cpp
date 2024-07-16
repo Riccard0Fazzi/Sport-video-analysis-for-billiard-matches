@@ -11,39 +11,10 @@ billiardBall::billiardBall(int x, int y, int width, int height, cv::Mat& image)
 // ------------------------------
 using namespace cv;
 
-std::vector<Vec3f> ball_detection(std::vector<cv::Point> points, const cv::Mat& inputImage)
+std::vector<Vec3f> ball_detection(const cv::Mat& inputImage)
 {
 
-	Mat temp = inputImage.clone();
-	cv::Mat mask = cv::Mat::zeros(temp.size(), CV_8UC3);
-    // Draw the points on the original image
-    for (const auto& point : points) {
-        cv::circle(mask, point, 5, cv::Scalar(0, 0, 255), -1); // Draw a red filled circle
-    }
-  	
-	cv::Rect roi(points[0],points[3]);
-
-	cv::rectangle(mask, roi.tl(), roi.br(), cv::Scalar(255, 255, 255), -1);
-
-	 // Create a new image for the result with the same type as the input image
-    cv::Mat croppedImage;
-    temp.copyTo(croppedImage, mask);
-   
-	// Find bounding box of the rectangle
-    //cv::Rect boundingBox = roi;
-
-    // Crop the image to the bounding box
-    croppedImage = croppedImage(roi);
-
-    // Resize the image to fit tightly around the content
-    cv::Mat resizedImage;
-    cv::resize(croppedImage, resizedImage, cv::Size(roi.width, roi.height));
-
-	Mat img = croppedImage.clone();
-
-	namedWindow("TEst");
-	imshow("TEst",croppedImage);
-	waitKey(0);
+	Mat img = inputImage.clone();
 
 	// Safety check on the image returned
 	if (img.empty()) // If filename is wrong, imread returns an empty Mat object
