@@ -8,13 +8,11 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/utils/filesystem.hpp>
-
-
 // Declare function prototypes
 
 /**
  * Apply the homography to a set of points
 	 */
-void homography(std::vector<cv::Point> points)
+void homography(const std::vector<cv::Point>& points);
 #endif // HOMOGRAPHY
 

@@ -42,7 +42,7 @@ std::vector<cv::Point> field_detection(const cv::Mat& inputImage, Mat & cropped_
 	vector<Vec2f> lines; // vector to hold the results of the detection
 	
 	// variables to create the cropped field
-	cv::Mat temp = cv::Mat::zeros(img.size(), CV_8UC1);
+	cv::Mat temp = cv::Mat::zeros(inputImage.size(), CV_8UC1);
 	vector<vector<Point>> contours;
 	vector<Vec4i> hierarchy;
 
@@ -205,7 +205,6 @@ std::vector<cv::Point> field_detection(const cv::Mat& inputImage, Mat & cropped_
 	for (const auto& point : center_points) {
 		std::cout << "Point(x=" << point.x << ", y=" << point.y << ")" << std::endl;
 	}
-
 
 	// Draw circles for the first point in center_points
 	for (const auto& point : center_points) {

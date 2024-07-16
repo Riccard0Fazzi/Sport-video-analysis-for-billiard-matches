@@ -2,7 +2,7 @@
 #include <iostream>
 #include "../include/field_detection.h"
 #include "../include/ball_detection.hpp"
-
+#include "../include/homography.h"
 using namespace cv;
 using namespace std;
 int main(int argc, char** argv) {
@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
 	std::vector<cv::Mat> video_frames; // vector that stores each video frame
 	cv::Mat frame;					   // temporary object to store each single frame
 	cv::Mat cropped_field;			   // cropped image to perform ball detection
-	vector<Point> field_points;		   // vector to store the points of the contour of the field
+	std::vector<cv::Point> field_points;		   // vector to store the points of the contour of the field
 	std::vector<billiardBall> balls;   // vector to store object of balls
 
 
@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
 	// Release the video capture object
     cap.release();
 
-	// -- FIELD DETECTION --
+	// -- Field detection --
 		
 	// The first step involves to perform the field detection from the first frame of the selected video.
 	// All the steps are located in the fiel field_detection.cpp
@@ -44,13 +44,14 @@ int main(int argc, char** argv) {
 	// 2 - output Mat object to store the image of the cropped table
 	field_points = field_detection(video_frames[0], cropped_field);
 
-	// -- BALL DETECTION --
+	// -- Ball detection --
 	
 	// Takes as input the cropped mask of the billiard table, to detect the balls
 	// RETURN: vector of object billiardBall
 	// PARAM: Mat object containing the cropped table
 	balls =	ball_detection(cropped_field);
-
+	// -- Field homography --
+	homography(field_points);
 	
 
     cv::destroyAllWindows();

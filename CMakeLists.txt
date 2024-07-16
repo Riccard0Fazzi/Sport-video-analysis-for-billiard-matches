@@ -23,6 +23,7 @@ include_directories(
 add_executable(BiliardVideoAnalysis
     src/field_detection.cpp
 	src/ball_detection.cpp
+	src/homography.cpp
     src/main.cpp
     # Include other source files if needed (ball_classification.cpp, tracking.cpp, etc.)
 )
