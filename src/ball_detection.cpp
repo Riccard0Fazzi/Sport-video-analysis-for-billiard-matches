@@ -111,13 +111,22 @@ void contrastStretching(const Mat& img, Mat& dest)  {
 
     cvtColor(hsv_img,dest,COLOR_HSV2BGR_FULL);
 }
-
 void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, double window_ratio) {
+
+	Mat temp = img.clone();
+	cvtColor(temp,temp,COLOR_BGR2Lab);
+	pyrMeanShiftFiltering(temp,temp,10,15);
+	cvtColor(temp,temp,COLOR_Lab2BGR);
+	namedWindow("MeanShift");
+	imshow("MeanShift",temp);
+	waitKey(0);
+
     // Convert the image to HSV color space
     Mat hsv_img;
-    cvtColor(img, hsv_img, COLOR_BGR2HSV_FULL);
+    cvtColor(temp, hsv_img, COLOR_BGR2HSV_FULL);
     std::vector<Mat> img_channels;
     split(hsv_img, img_channels);
+
 
 
     // Compute the mean and standard deviation for each channel
@@ -131,20 +140,17 @@ void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, double window_rat
     Scalar mv, sv;
     meanStdDev(img_channels[2], mv, sv);
 
-cout << "mh: " << mh[0] << "ms: " << ms[0] << "mv: " << mv[0] << endl;
+    cout << "mh: " << mh[0] << "ms: " << ms[0] << "mv: " << mv[0] << endl;
 
     // Calculate the window size as function of the image size
     int window_size = static_cast<int>(std::round(static_cast<double>(std::max(img.rows,img.cols)) / window_ratio));
-	double k1; // 7.0 You can adjust this value for tighter or looser thresholds
-	double k2 = 60.0; // 100.0 You can adjust this value for tighter or looser threshold
-	double k3 = 100.0; // 50.0 You can adjust this value for tighter or looser thresholds
 
-		
+
 
     // Initialize the destination imageq
     dest = Mat::zeros(img.size(), img.type());
 
- 	// Determine the most common color in the window region by histogram evaluation
+    // Determine the most common color in the window region by histogram evaluation
     Vec3b field_color;
     mostCommonColor(img,field_color);
     // Iterate over the image with non-overlapping windows
@@ -162,16 +168,7 @@ cout << "mh: " << mh[0] << "ms: " << ms[0] << "mv: " << mv[0] << endl;
             mostCommonColor(window_region,most_common_color);
 
 
-			//cout << "H-field: " << static_cast<int>(field_color[0]) << " S-field: " << static_cast<int>(field_color[1])  << " V-field: " << static_cast<int>(field_color[2])  << endl;	
-			//cout << "H-commo: " << static_cast<int>(most_common_color[0]) << " S-commo: " << static_cast<int>(most_common_color[1])  << " V-commo: " << static_cast<int>(most_common_color[2])  << endl;	
-			/*Scalar mcc_values(static_cast<int>(most_common_color[0]), static_cast<int>(most_common_color[1]), static_cast<int>(most_common_color[2]));
-			Mat mcc(100,100,CV_8UC3,mcc_values);
-			Mat temp;
-			cvtColor(mcc,temp,cv::COLOR_HSV2BGR_FULL);
-			waitKey(0);
-			namedWindow("MCC");
-			imshow("MCC",temp);
-		*/	
+
 
             std::vector<Mat> hsv_channels;
             split(window_region, hsv_channels);
@@ -199,64 +196,140 @@ cout << "mh: " << mh[0] << "ms: " << ms[0] << "mv: " << mv[0] << endl;
 
             // Calculate lower and upper bounds directly based on standard deviations
             std::vector<int> hsv_thresholds(6);
-			/*if(stddev_saturation[0] < 0.7 && stddev_value[0] < 0.7)
+
+            // GENERAL STD variation
+            double lower_coeff = 0.9; // 0.8
+            double higher_coeff = 1.2; // 1.2
+
+            double lower_weight[3];
+            double higher_weight[3];
+
+			// Hue settings for lower/upper bound differences
+			if(most_common_color[0] > mean_hue[0])
 			{
-				hsv_thresholds[0] = static_cast<int>(k1); // Lower bound for hue
-				hsv_thresholds[1] = static_cast<int>(k1); // Upper bound for hue
-				hsv_thresholds[2] = static_cast<int>(k2); // Lower bound for saturation
-				hsv_thresholds[3] = static_cast<int>(k2); // Upper bound for saturation
-				hsv_thresholds[4] = static_cast<int>(k3); // Lower bound for value
-				hsv_thresholds[5] = static_cast<int>(k3); // Upper bound for value
-
-
-			} else {
-
-            hsv_thresholds[0] = static_cast<int>(k1); // Lower bound for hue
-            hsv_thresholds[1] = static_cast<int>(k1); // Upper bound for hue
-            hsv_thresholds[2] = static_cast<int>(k2*stddev_saturation[0]); // Lower bound for saturation
-            hsv_thresholds[3] = static_cast<int>(k2*stddev_saturation[0]); // Upper bound for saturation
-            hsv_thresholds[4] = static_cast<int>(k3*stddev_value[0]); // Lower bound for value
-            hsv_thresholds[5] = static_cast<int>(k3*stddev_value[0]); // Upper bound for value
-			}
-*/
-			double lower_coeff = 0.7;
-			double higher_coeff = 1.1;
-			// HUE
-			if(abs(stddev_hue[0]-sh[0]) < 0.3*nmh[0]) // case 1: non uniform window only in Hue
+				higher_weight[0] = 0.8;
+				lower_weight[0]= 1.2;
+			} else
 			{
-				hsv_thresholds[0] = static_cast<int>(lower_coeff*abs(mean_hue[0]-mh[0])); // Lower bound for hue
-				hsv_thresholds[1] = static_cast<int>(lower_coeff*abs(mean_hue[0] -mh[0])); // Upper bound for hue
-				
-			} else {
-
-            hsv_thresholds[0] = static_cast<int>(higher_coeff*abs(mean_hue[0]-mh[0])); // Lower bound for hue
-            hsv_thresholds[1] = static_cast<int>(higher_coeff*abs(mean_hue[0]-mh[0]));  // Upper bound for hue
+				higher_weight[0] = 1.2;
+				lower_weight[0] = 0.8;
 			}
-			// SATURATION
-			if(abs(stddev_saturation[0]-ss[0]) < 0.3*nms[0])
+			if(most_common_color[1] > mean_hue[1])
 			{
-				hsv_thresholds[2] = static_cast<int>(lower_coeff*abs(mean_saturation[0]-ms[0])); // Lower bound for saturation
-				hsv_thresholds[3] = static_cast<int>(lower_coeff*abs(mean_saturation[0]-ms[0])); // Upper bound for saturation
-
-
-			} else {
-
-            hsv_thresholds[2] = static_cast<int>(higher_coeff*abs(mean_saturation[0]-ms[0]));  // Lower bound for saturation
-            hsv_thresholds[3] = static_cast<int>(higher_coeff*abs(mean_saturation[0]-ms[0]));  // Upper bound for saturation
-			}
-			//VALUE
-			if(abs(stddev_value[0]-sv[0]) < 0.3*nmv[0])
+				higher_weight[1] = 0.8;
+				lower_weight[1] = 1.2;
+			} else
 			{
-				hsv_thresholds[4] = static_cast<int>(lower_coeff*abs(mean_value[0]-mv[0])); // Lower bound for value
-				hsv_thresholds[5] = static_cast<int>(lower_coeff*abs(mean_value[0]-mv[0])); // Upper bound for value
-
-
-			} else {
-
-            hsv_thresholds[4] = static_cast<int>(higher_coeff*abs(mean_value[0]-mv[0]));  // Lower bound for value
-            hsv_thresholds[5] = static_cast<int>(higher_coeff*abs(mean_value[0]-mv[0]));  // Upper bound for value
+				higher_weight[1] = 1.2;
+				lower_weight[1] = 0.8;
 			}
-			// Create a mask for the most common color in the window region
+			if(most_common_color[2] > mean_hue[2])
+			{
+				higher_weight[2] = 0.8;
+				lower_weight[2] = 1.2;
+			} else
+			{
+				higher_weight[2] = 1.2;
+				lower_weight[2] = 0.8;
+			}
+            // HUE
+
+            // STD condition
+            double h_cond;
+            if(stddev_hue[0]>sh[0]){
+                h_cond = sh[0]/stddev_hue[0];
+            }
+            else{
+                h_cond = stddev_hue[0]/sh[0];
+            }
+
+            // THRESHOLD
+            double  h_t;
+            if(mean_hue[0]>mh[0]){
+                h_t = 10*mh[0]/mean_hue[0];
+            }
+            else{
+                h_t = 10*mean_hue[0]/mh[0];
+            }
+
+                     // 0.3 && h_t/10 < 0.5)
+            if(h_cond < 0.5) // case 1: non-uniform window only in Hue
+            {
+                hsv_thresholds[0] = static_cast<int>(lower_weight[0]*lower_coeff*h_t); // Lower bound for hue
+                hsv_thresholds[1] = static_cast<int>(higher_weight[0]*lower_coeff*h_t); // Upper bound for hue
+
+            } else {
+
+                hsv_thresholds[0] = static_cast<int>(lower_weight[0]*higher_coeff*h_t); // Lower bound for hue
+                hsv_thresholds[1] = static_cast<int>(higher_weight[0]*higher_coeff*h_t);  // Upper bound for hue
+            }
+
+            // SATURATION
+
+            // STD condition
+            double s_cond;
+            if(stddev_saturation[0]>ss[0]){
+                s_cond = ss[0]/stddev_saturation[0];
+            }
+            else{
+                s_cond = stddev_saturation[0]/ss[0];
+            }
+
+            // THRESHOLD
+            double  s_t;
+            if(mean_saturation[0]>ms[0]){
+                s_t = 60*ms[0]/mean_saturation[0];
+            }
+            else{
+                s_t = 60*mean_saturation[0]/ms[0];
+            }
+
+			       // 0.3
+            if(s_cond<0.6)
+            {
+                hsv_thresholds[2] = static_cast<int>(lower_weight[1]*lower_coeff*s_t); // Lower bound for saturation
+                hsv_thresholds[3] = static_cast<int>(higher_weight[1]*lower_coeff*s_t); // Upper bound for saturation
+
+
+            } else {
+
+                hsv_thresholds[2] = static_cast<int>(lower_weight[1]*higher_coeff*s_t);  // Lower bound for saturation
+                hsv_thresholds[3] = static_cast<int>(higher_weight[1]*higher_coeff*s_t);  // Upper bound for saturation
+            }
+
+
+
+            //VALUE
+
+            // STD condition
+            double v_cond;
+            if(stddev_value[0]>sv[0]){
+                v_cond = sv[0]/stddev_value[0];
+            }
+            else{
+                v_cond = stddev_value[0]/sv[0];
+            }
+            // THRESHOLD
+            double  v_t;
+            if(mean_value[0]>mv[0]){
+                v_t = 60*mv[0]/mean_value[0]; // 60
+            }
+            else{
+                v_t = 60*mean_value[0]/mv[0]; // 60
+            }
+				   // 0.6
+            if(v_cond<0.6)
+            {
+                hsv_thresholds[4] = static_cast<int>(lower_weight[2]*lower_coeff*v_t); // Lower bound for value
+                hsv_thresholds[5] = static_cast<int>(higher_weight[2]*lower_coeff*v_t); // Upper bound for value
+
+
+            } else {
+
+                hsv_thresholds[4] = static_cast<int>(lower_weight[2]*higher_coeff*v_t);  // Lower bound for value
+                hsv_thresholds[5] = static_cast<int>(higher_weight[2]*higher_coeff*v_t);  // Upper bound for value
+            }
+            // Create a mask for the most common color in the window region
             Scalar lower_bound(
                     std::max(most_common_color[0] - hsv_thresholds[0], 0),
                     std::max(most_common_color[1] - hsv_thresholds[2], 0),
@@ -276,7 +349,7 @@ cout << "mh: " << mh[0] << "ms: " << ms[0] << "mv: " << mv[0] << endl;
             Mat inverted_mask;
             bitwise_not(mask,inverted_mask);
 
-			
+
 
             // Apply the mask to the corresponding region in the destination image
             Mat dest_region = dest(window);
@@ -284,7 +357,6 @@ cout << "mh: " << mh[0] << "ms: " << ms[0] << "mv: " << mv[0] << endl;
         }
     }
 }
-
 
 
 void ballDetection(const Mat& img, std::vector<Vec3f>& circles) {
@@ -297,7 +369,7 @@ void ballDetection(const Mat& img, std::vector<Vec3f>& circles) {
 
     // Color-based segmentation applied to obtain the balls mask
     Mat segmented_img;
-    double window_ratio = 10; //14.6;
+    double window_ratio = 11.5; //14.6;
     //std::vector<int> HSV_thresholds = {8, 200, 70};
     adaptiveColorBasedSegmentation(filtered_img,segmented_img,window_ratio);
 

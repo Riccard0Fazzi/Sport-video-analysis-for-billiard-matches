@@ -1,4 +1,5 @@
 #include "../include/field_detection.h"
+#include "../include/ball_detection.hpp"
 
 using namespace cv;
 using namespace std;
@@ -243,6 +244,24 @@ std::vector<cv::Point> field_detection(const cv::Mat& inputImage, Mat & cropped_
 	bounding_box = boundingRect(contours[1]);
 	// Crop the image using the bounding box
 	cropped_field = img(bounding_box);
+	Mat temp_cropped_field;
+	cvtColor(cropped_field,temp_cropped_field,COLOR_BGR2HSV_FULL);
+	Vec3b most_common_color;
+	Rect square_rect((temp_cropped_field.cols-60)/2,(temp_cropped_field.rows-60)/2,60,60);
+	mostCommonColor(temp_cropped_field(square_rect),most_common_color);	
+	Mat rgb_mat(100, 100, CV_8UC3, most_common_color);	
+	cvtColor(rgb_mat,rgb_mat,COLOR_HSV2BGR_FULL);
+
+	/*namedWindow("Rect");
+	imshow("Rect",temp_cropped_field(square_rect));
+	waitKey(0);
+*/
+	Mat mask_black;
+		inRange(cropped_field,Scalar(0,0,0),Scalar(0,0,0),mask_black);
+	
+	cropped_field.setTo(rgb_mat.at<Vec3b>(1,1),mask_black);
+
+
 
 	//imshow("CropField",cropped_field);
 	//waitKey(0);
