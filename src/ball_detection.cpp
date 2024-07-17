@@ -1,89 +1,54 @@
-// Created by Crucio on 16/07/24 - Hours: 20
-/*
-/Users/crucio/CLionProjects/ProjectWorkSpace/first_frames_videos
-*.png
-*/
-#include <iostream>
-#include <opencv2/opencv.hpp>
-#include <opencv2/core/utils/filesystem.hpp>
-#include <opencv2/xfeatures2d/nonfree.hpp>
+// Created by Tommaso Tubaldo on 06/06/24 - Hours: 70
+#include "ball_detection.hpp"
 
+// Structure used to store balls names and colors
+billiardBall::billiardBall(int x, int y, int width, int height, cv::Mat& image)
+    : x(x), y(y), width(width), height(height), image(image)
+{
+    // Optionally, you can add additional initialization logic here if needed
+}
+
+// ------------------------------
 using namespace cv;
 using namespace std;
 
-void contrastStretching(const Mat& img, Mat& dest);
-void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, double window_ratio);
-void mostCommonColor(const Mat& img, Vec3b& most_common_color);
-void ballDetection(const Mat& img, std::vector<Vec3f>& circles);
-void drawCircles(const Mat& img, Mat& circles_img, const std::vector<Vec3f>& circles);
-void printCircles(const Mat& img, const std::vector<Vec3f>& circles, int circles_img_size, std::vector<Mat>& circles_img);
+std::vector<billiardBall> ball_detection(const cv::Mat& inputImage)
+{
 
-int main(int argc, char** argv) {
+	Mat img = inputImage.clone();
 
-    Mat descriptors;
-    // LOAD IMAGES
-    // -----------------------------------------------------------------------------------------------------------------
+	// Safety check on the image returned
+	if (img.empty()) // If filename is wrong, imread returns an empty Mat object
+	{
+		// Print an error message using cv::Error
+		std::cerr << "Error: " << format("Failed to load image! Error code: %d", cv::Error::StsError) << std::endl;
+		exit(0);
+	}
 
+	// Detection of the billiard balls
+	std::vector<Vec3f> circles;
+	ballDetection(img,circles);
 
-    // Safety check on the command line argument
-    if(argc < 2) {
-        std::cout << "WARNING: An image filename shall be provided." << std::endl;
-        return EXIT_FAILURE;
-    }
-    string path = argv[1];
-    string pattern = argv[2];
-    vector<cv::String> filenames;
-    utils::fs::glob(path, pattern, filenames);
+	std::vector<Mat> circles_images;
+	int circle_size = 100;
+	printCircles(img,circles,circle_size,circles_images);
+	
+	// Draw the detected circles
+	Mat circles_img;
+	drawCircles(img,circles_img,circles);
+	std::vector<billiardBall> balls; // vector of object balls
+	
+	for(int i = 0; i < circles_images.size(); i++)
+	{
+		balls.emplace_back(circles[i][0],circles[i][1],circles[i][2],10,circles_images[i]);		
+	}
+	
 
-    // Loop for every image     (size_t c = 0; c < filenames.size(); ++c)
-    for (size_t c = 0; c < filenames.size(); ++c) {
+	imshow("Circles",circles_img);
+	waitKey(0);
+	destroyAllWindows();
 
-        // Read the image
-        Mat img = imread(filenames[c], IMREAD_ANYCOLOR);
-
-        // Safety check on the image returned
-        if (img.empty()) // If filename is wrong, imread returns an empty Mat object
-        {
-            // Print an error message using cv::Error
-            std::cerr << "Error: " << format("Failed to load image! Error code: %d", cv::Error::StsError) << std::endl;
-            exit(0);
-        }
-
-        // Detection of the billiard balls
-        std::vector<Vec3f> circles;
-        ballDetection(img,circles);
-
-        std::vector<Mat> circles_images;
-        int circle_size = 100;
-        printCircles(img,circles,circle_size,circles_images);
-
-        // Draw the detected circles
-        Mat circles_img;
-        drawCircles(img,circles_img,circles);
-
-
-
-
-
-        // SHOW OUTPUT
-        // -------------------------------------------------------------------------------------------------------------
-
-        // Show initial Canny image
-        namedWindow("BILLIARD BALLS DETECTION");
-        // Show initial Canny image
-        imshow("BILLIARD BALLS DETECTION",circles_img);
-        // Wait for trackbar adjustments and key press
-        char key = waitKey(0);
-
-        // Check if 'q' is pressed to quit, otherwise continue
-        if (key == 'q' || key == 'Q')
-            break;
-
-        // Close all windows before moving to the next image
-        destroyAllWindows();
-
-    }
-    return 0;
+	return balls;
 }
 
 
@@ -187,7 +152,18 @@ void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, double window_rat
             // Determine the most common color in the window region by histogram evaluation
             Vec3b most_common_color;
             mostCommonColor(window_region,most_common_color);
-
+			
+			/*Scalar mcc_values(static_cast<int>(most_common_color[0]), static_cast<int>(most_common_color[1]), static_cast<int>(most_common_color[2]));
+			Mat mcc(100,100,CV_8UC3,mcc_values);
+			Mat temp;
+			cvtColor(mcc,temp,cv::COLOR_HSV2BGR_FULL);
+			waitKey(0);
+			namedWindow("MCC");
+			imshow("MCC",temp);
+		*/	
+            cout << "-----------------" << endl;
+            cout << "Most common color: " << endl;
+			std::cout << "H: " << static_cast<int>(most_common_color[0]) << " S: " << static_cast<int>(most_common_color[1]) << " V: " <<   static_cast<int>(most_common_color[2]) << std::endl; 
 
 
             std::vector<Mat> hsv_channels;
@@ -213,20 +189,36 @@ void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, double window_rat
 
 
             // Set thresholds based on mean and stddev
-            double k1 = 7.0; // You can adjust this value for tighter or looser thresholds
-            double k2 = 100.0; // You can adjust this value for tighter or looser thresholds
-            double k3 = 50.0; // You can adjust this value for tighter or looser thresholds
+            double k1 = 7.0; // 7.0 You can adjust this value for tighter or looser thresholds
+            double k2 = 60.0; // 100.0 You can adjust this value for tighter or looser thresholds
+            double k3 = 100.0; // 50.0 You can adjust this value for tighter or looser thresholds
 
             // Calculate lower and upper bounds directly based on standard deviations
             std::vector<int> hsv_thresholds(6);
-            hsv_thresholds[0] = static_cast<int>(k1*nmh[0]); // Lower bound for hue
-            hsv_thresholds[1] = static_cast<int>(k1*nmh[0]); // Upper bound for hue
-            hsv_thresholds[2] = static_cast<int>(k2*nms[0]); // Lower bound for saturation
-            hsv_thresholds[3] = static_cast<int>(k2*nms[0]); // Upper bound for saturation
-            hsv_thresholds[4] = static_cast<int>(k3*nmv[0]); // Lower bound for value
-            hsv_thresholds[5] = static_cast<int>(k3*nmv[0]); // Upper bound for value
+			if(stddev_saturation[0] < 0.7 && stddev_value[0] < 0.7)
+			{
+				hsv_thresholds[0] = static_cast<int>(k1); // Lower bound for hue
+				hsv_thresholds[1] = static_cast<int>(k1); // Upper bound for hue
+				hsv_thresholds[2] = static_cast<int>(k2); // Lower bound for saturation
+				hsv_thresholds[3] = static_cast<int>(k2); // Upper bound for saturation
+				hsv_thresholds[4] = static_cast<int>(k3); // Lower bound for value
+				hsv_thresholds[5] = static_cast<int>(k3); // Upper bound for value
 
-// Create a mask for the most common color in the window region
+
+			} else {
+
+            hsv_thresholds[0] = static_cast<int>(k1); // Lower bound for hue
+            hsv_thresholds[1] = static_cast<int>(k1); // Upper bound for hue
+            hsv_thresholds[2] = static_cast<int>(k2*stddev_saturation[0]); // Lower bound for saturation
+            hsv_thresholds[3] = static_cast<int>(k2*stddev_saturation[0]); // Upper bound for saturation
+            hsv_thresholds[4] = static_cast<int>(k3*stddev_value[0]); // Lower bound for value
+            hsv_thresholds[5] = static_cast<int>(k3*stddev_value[0]); // Upper bound for value
+			}
+            cout << "Threshold: " << endl;
+			std::cout << "H: " <<   hsv_thresholds[1] << " S: " <<  hsv_thresholds[3] << " V: "  << hsv_thresholds[5] << std::endl;  
+
+            cout << "-----------------" << endl;
+			// Create a mask for the most common color in the window region
             Scalar lower_bound(
                     std::max(most_common_color[0] - hsv_thresholds[0], 0),
                     std::max(most_common_color[1] - hsv_thresholds[2], 0),
@@ -237,10 +229,6 @@ void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, double window_rat
                     std::min(most_common_color[1] + hsv_thresholds[3], 255),
                     std::min(most_common_color[2] + hsv_thresholds[5], 255)
             );
-            cout << "-----------------" << endl;
-            cout << hsv_thresholds[0] << endl;
-            cout << hsv_thresholds[2] << endl;
-            cout << hsv_thresholds[4] << endl;
             Mat mask;
             inRange(window_region, lower_bound, upper_bound, mask);
 
@@ -249,6 +237,8 @@ void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, double window_rat
             // Invert the mask to remove the most common color
             Mat inverted_mask;
             bitwise_not(mask,inverted_mask);
+
+			
 
             // Apply the mask to the corresponding region in the destination image
             Mat dest_region = dest(window);
@@ -269,7 +259,7 @@ void ballDetection(const Mat& img, std::vector<Vec3f>& circles) {
 
     // Color-based segmentation applied to obtain the balls mask
     Mat segmented_img;
-    double window_ratio = 14.6; //14.6;
+    double window_ratio = 10; //14.6;
     //std::vector<int> HSV_thresholds = {8, 200, 70};
     adaptiveColorBasedSegmentation(filtered_img,segmented_img,window_ratio);
 

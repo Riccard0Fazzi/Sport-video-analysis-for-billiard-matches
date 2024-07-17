@@ -49,9 +49,9 @@ void contrastStretching(const cv::Mat& img, cv::Mat& dest);
 // By making use of the sub-windows we achieve much more invariance to illumination.
 // Lastly, we apply the thresholding of the dominant color using the tolerances given
 // by 'HSV_thresholds'.
-void adaptiveColorBasedSegmentation(const cv::Mat& img, cv::Mat& dest, std::vector<int> HSV_thresholds, double window_ratio);
 
 
+void adaptiveColorBasedSegmentation(const cv::Mat& img, cv::Mat& dest, double window_ratio);
 // Selects the detected balls based on their colors and on the color palettes
 // given by the struct 'billiard_tables'.
 // The selected colors are then returned by 'new_circle_vector'

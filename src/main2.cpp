@@ -86,6 +86,7 @@ int main(int argc, char** argv) {
 		balls_coordinates.clear();
 		H.release();
 		cv::destroyAllWindows();
+		std::cout << "+--------------------------------------------------------------------------------+" << std::endl;
 	}
 		return 0;
 }
