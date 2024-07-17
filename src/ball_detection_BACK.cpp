@@ -10,6 +10,7 @@ billiardBall::billiardBall(int x, int y, int width, int height, cv::Mat& image)
 
 // ------------------------------
 using namespace cv;
+using namespace std;
 
 std::vector<billiardBall> ball_detection(const cv::Mat& inputImage)
 {
@@ -113,19 +114,34 @@ void contrastStretching(const Mat& img, Mat& dest)  {
 }
 
 void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, std::vector<int> HSV_thresholds, double window_ratio) {
-    // Convert the image to HSV color space
+// Convert the image to HSV color space
     Mat hsv_img;
     cvtColor(img, hsv_img, COLOR_BGR2HSV_FULL);
+    std::vector<Mat> img_channels;
+    split(hsv_img, img_channels);
+
+
+    // Compute the mean and standard deviation for each channel
+    Scalar mh, sh;
+    meanStdDev(img_channels[0], mh, sh);
+
+
+    Scalar ms, ss;
+    meanStdDev(img_channels[1], ms, ss);
+
+    Scalar mv, sv;
+    meanStdDev(img_channels[2], mv, sv);
 
     // Calculate the window size as function of the image size
     int window_size = static_cast<int>(std::round(static_cast<double>(std::max(img.rows,img.cols)) / window_ratio));
 
-    // Initialize the destination image
+    // Initialize the destination imageq
     dest = Mat::zeros(img.size(), img.type());
 
     // Iterate over the image with non-overlapping windows
     for (int y = 0; y < img.rows; y += window_size) {
         for (int x = 0; x < img.cols; x += window_size) {
+
             // Define the window region, ensuring it doesn't exceed the image bounds
             int window_width = std::min(window_size, img.cols - x);
             int window_height = std::min(window_size, img.rows - y);
@@ -136,13 +152,62 @@ void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, std::vector<int> 
             Vec3b most_common_color;
             mostCommonColor(window_region,most_common_color);
 
-            // Create a mask for the most common color in the window region
-            Scalar lower_bound(most_common_color[0] - HSV_thresholds[0], most_common_color[1] - HSV_thresholds[1], most_common_color[2] - HSV_thresholds[2]);
-            Scalar upper_bound(most_common_color[0] + HSV_thresholds[0], most_common_color[1] + HSV_thresholds[1], most_common_color[2] + HSV_thresholds[2]);
-            Mat mask;
-            inRange(window_region, lower_bound, upper_bound, mask);
 
-            // Invert the mask to remove the most common color
+
+            std::vector<Mat> hsv_channels;
+            split(window_region, hsv_channels);
+
+
+            // Compute the mean and standard deviation for each channel
+            Scalar mean_hue, stddev_hue;
+            meanStdDev(hsv_channels[0], mean_hue, stddev_hue);
+            Scalar nmh = mean_hue/mh;
+            Scalar nsh = stddev_hue/sh;
+
+
+            Scalar mean_saturation, stddev_saturation;
+            meanStdDev(hsv_channels[1], mean_saturation, stddev_saturation);
+            Scalar nms = mean_saturation/ms;
+            Scalar nss = stddev_saturation/ss;
+
+            Scalar mean_value, stddev_value;
+            meanStdDev(hsv_channels[2], mean_value, stddev_value);
+            Scalar nmv = mean_value/mv;
+            Scalar nsv = stddev_value/sv;
+
+
+            // Set thresholds based on mean and stddev
+            double k1 = 7.0; // You can adjust this value for tighter or looser thresholds
+            double k2 = 100.0; // You can adjust this value for tighter or looser thresholds
+            double k3 = 50.0; // You can adjust this value for tighter or looser thresholds
+
+            // Calculate lower and upper bounds directly based on standard deviations
+            std::vector<int> hsv_thresholds(6);
+            hsv_thresholds[0] = static_cast<int>(k1*nmh[0]); // Lower bound for hue
+            hsv_thresholds[1] = static_cast<int>(k1*nmh[0]); // Upper bound for hue
+            hsv_thresholds[2] = static_cast<int>(k2*nms[0]); // Lower bound for saturation
+            hsv_thresholds[3] = static_cast<int>(k2*nms[0]); // Upper bound for saturation
+            hsv_thresholds[4] = static_cast<int>(k3*nmv[0]); // Lower bound for value
+            hsv_thresholds[5] = static_cast<int>(k3*nmv[0]); // Upper bound for value
+
+			// Create a mask for the most common color in the window region
+            Scalar lower_bound(
+                    std::max(most_common_color[0] - hsv_thresholds[0], 0),
+                    std::max(most_common_color[1] - hsv_thresholds[2], 0),
+                    std::max(most_common_color[2] - hsv_thresholds[4], 0)
+            );
+            Scalar upper_bound(
+                    std::min(most_common_color[0] + hsv_thresholds[1], 180),
+                    std::min(most_common_color[1] + hsv_thresholds[3], 255),
+                    std::min(most_common_color[2] + hsv_thresholds[5], 255)
+            );
+            cout << "-----------------" << endl;
+            cout << hsv_thresholds[0] << endl;
+            cout << hsv_thresholds[2] << endl;
+            cout << hsv_thresholds[4] << endl;
+            Mat mask;
+            inRange(window_region, lower_bound, upper_bound, mask); 
+			// Invert the mask to remove the most common color
             Mat inverted_mask;
             bitwise_not(mask,inverted_mask);
 
@@ -152,6 +217,7 @@ void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, std::vector<int> 
         }
     }
 }
+
 
 void ballSelection(const Mat& img, const std::vector<Vec3f>& circle_vector, std::vector<Vec3f>& new_circle_vector, const std::vector<billiardSet> billiard_tables) {
     Mat mask, ball_region, hsv_ball_region;
@@ -216,7 +282,7 @@ void ballSelection(const Mat& img, const std::vector<Vec3f>& circle_vector, std:
 }
 
 void ballDetection(const Mat& img, std::vector<Vec3f>& circles) {
-    // Bilateral Filter [d:7, sigmaColor:60, sigmaSpace:300]
+   // Bilateral Filter [d:7, sigmaColor:60, sigmaSpace:300]
     Mat filtered_img;
     bilateralFilter(img,filtered_img,7,60,300);
 
@@ -236,7 +302,7 @@ void ballDetection(const Mat& img, std::vector<Vec3f>& circles) {
 
     // Morphological operators (CLOSING + OPENING), used to make more even the balls blobs
     morphologyEx(binary_segmented_img,binary_segmented_img,MORPH_CLOSE,getStructuringElement(MORPH_ELLIPSE,Size(3, 3)),
-                 Point(-1, -1),5);
+                 Point(-1, -1),1);
     morphologyEx(binary_segmented_img,binary_segmented_img,MORPH_OPEN,getStructuringElement(MORPH_ELLIPSE,Size(3,3)),
                  Point(-1,-1),3);
 	cv::namedWindow("Before_Morph");
