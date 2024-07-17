@@ -1,5 +1,7 @@
 // Created by Tommaso Tubaldo on 06/06/24 - Hours: 70
 #include "ball_detection.hpp"
+using namespace cv;
+using namespace std;
 
 // Structure used to store balls names and colors
 billiardBall::billiardBall(int x, int y, int width, int height, cv::Mat& image)
@@ -7,10 +9,6 @@ billiardBall::billiardBall(int x, int y, int width, int height, cv::Mat& image)
 {
     // Optionally, you can add additional initialization logic here if needed
 }
-
-// ------------------------------
-using namespace cv;
-using namespace std;
 
 std::vector<billiardBall> ball_detection(const cv::Mat& inputImage)
 {
@@ -221,7 +219,7 @@ cout << "mh: " << mh[0] << "ms: " << ms[0] << "mv: " << mv[0] << endl;
             hsv_thresholds[5] = static_cast<int>(k3*stddev_value[0]); // Upper bound for value
 			}
 */
-			double lower_coeff = 0.9
+			double lower_coeff = 0.7;
 			double higher_coeff = 1.1;
 			// HUE
 			if(abs(stddev_hue[0]-sh[0]) < 0.3*nmh[0]) // case 1: non uniform window only in Hue
@@ -303,6 +301,8 @@ void ballDetection(const Mat& img, std::vector<Vec3f>& circles) {
     //std::vector<int> HSV_thresholds = {8, 200, 70};
     adaptiveColorBasedSegmentation(filtered_img,segmented_img,window_ratio);
 
+	// Here the image is converted into a binary one
+	// ideally only the billiard balls should be highlighted
     // Conversion to gray-scale and binary thresholding of the balls mask
     cvtColor(segmented_img,segmented_img,COLOR_BGR2GRAY);
     Mat binary_segmented_img;
