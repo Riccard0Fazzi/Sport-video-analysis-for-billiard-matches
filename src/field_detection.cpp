@@ -199,11 +199,11 @@ std::vector<cv::Point> field_detection(const cv::Mat& inputImage, Mat & cropped_
 	if (center_points[2].x > center_points[3].x) std::swap(center_points[2], center_points[3]);
 
 	// Print the sorted points
-	std::cout << "Sorted Points (Upper Left, Upper Right, Lower Left, Lower Right):" << std::endl;
+	/*std::cout << "Sorted Points (Upper Left, Upper Right, Lower Left, Lower Right):" << std::endl;
 	for (const auto& point : center_points) {
 		std::cout << "Point(x=" << point.x << ", y=" << point.y << ")" << std::endl;
 	}
-
+*/
 	// Draw circles for the first point in center_points
 	for (const auto& point : center_points) {
 		cv::circle(temp, point, 2, cv::Scalar(255), -1);  // Draw yellow circles at the intersection points
