@@ -112,6 +112,7 @@ std::vector<cv::Point> field_detection(const cv::Mat& inputImage, Mat & cropped_
 	}
 
 	TermCriteria criteria(TermCriteria::EPS + TermCriteria::COUNT, 10, 1.0);
+	theRNG().state = 12345;
 	kmeans(data, K, labels, criteria, 3, KMEANS_RANDOM_CENTERS, centers);
 	// Create structures to detect corners
 	vector<Mat> corners(centers.rows, canny.clone());
