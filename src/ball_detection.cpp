@@ -33,8 +33,8 @@ std::vector<billiardBall> ball_detection(const cv::Mat& inputImage)
     {       balls.emplace_back(circles[i][0],circles[i][1],circles[i][2],10,circles_images[i]);       
     }
     classify(img,neighborhoods, circles_images);    
-    //imshow("Circles",circles_img);
-    //waitKey(0);
+    imshow("Circles",circles_img);
+    waitKey(0);
 	destroyAllWindows();
     return balls;
 }
@@ -481,6 +481,12 @@ void drawCircles(const Mat& img, Mat& circles_img, const std::vector<Vec3f>& cir
     }
 }
 
+bool isCircular(vector<Point> contour) {
+    double area = contourArea(contour);
+    double perimeter = arcLength(contour, true);
+    double circularity = 4 * CV_PI * (area / (perimeter * perimeter));
+	return circularity > 0.4;  // threshold for circularity
+}
 
 void classify(const Mat& img, std::vector<Mat>& neighborhoods, std::vector<Mat>& circles_img) {
 
@@ -509,6 +515,8 @@ void classify(const Mat& img, std::vector<Mat>& neighborhoods, std::vector<Mat>&
     // IMAGE BALL EVALUATION
 
     for(size_t i = 0; i < neighborhoods.size(); ++i){
+
+
 
         // Mean and Standard deviation of the Neighborhood
 
@@ -547,6 +555,37 @@ void classify(const Mat& img, std::vector<Mat>& neighborhoods, std::vector<Mat>&
         Vec3b b_most_common_color;
         mostCommonColor(hsv_ball,b_most_common_color);
 
+		// FAZZI's method ------------------
+
+		Mat image = circles_img[i];
+		Mat gray, blurred, edged;
+
+		//cvtColor(image,image,COLOR_BGR2Lab);
+		//pyrMeanShiftFiltering(image,image,1,1);
+		//cvtColor(image,image,COLOR_Lab2BGR);
+
+		cvtColor(image, gray, COLOR_BGR2GRAY);
+		GaussianBlur(gray, blurred, Size(3, 3),bsh[0],bsh[0]);
+		Canny(blurred, edged, 50, 150);
+		Size newSize(100, 100);  // Width and height
+
+		// Resize the image
+		Mat resizedCanny;
+		resize(edged, resizedCanny, newSize);
+
+
+		vector<vector<Point>> contours;
+		findContours(edged, contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
+
+		for (auto &contour : contours) {
+			if (isCircular(contour)) {
+				// Accept the contour as a ball
+				//drawContours(image, vector<vector<Point>>{contour}, -1, Scalar(0, 255, 0), 0.2);
+			} else {
+				// Reject the contour as a false positive
+				//drawContours(image, vector<vector<Point>>{contour}, -1, Scalar(0, 0, 255), 0.2);
+			}
+		}
         //CLASSIFICATION
 
         int a = abs(sh[0] - wsh[0]);
@@ -558,8 +597,17 @@ void classify(const Mat& img, std::vector<Mat>& neighborhoods, std::vector<Mat>&
         int discard_count = 0;
 
         if(STDdistance<70) {
-            //imshow("Circles",circles_img[i]);
-            //waitKey(0);
+			// Specify the new size
+			Size newSize(100, 100);  // Width and height
+
+			// Resize the image
+			Mat resizedImage;
+			resize(circles_img[i], resizedImage, newSize);
+	imshow("cannyImg",resizedCanny);
+	waitKey(0);
+
+            imshow("True_Positives",resizedImage);
+            waitKey(0);
             //Mat save = circles_img[i].clone(); // Clone the region to store in the vector
             //
             //circles_img.push_back(save); // Store the region of interest in the vector
@@ -567,8 +615,8 @@ void classify(const Mat& img, std::vector<Mat>& neighborhoods, std::vector<Mat>&
 
         else{
             //discard_count++;
-            imshow("FALSE POSITIVE",circles_img[i]);
-            waitKey(0);
+            //imshow("FALSE POSITIVE",circles_img[i]);
+            //waitKey(0);
         }
         //cout << "Number of discarded balls: " << endl;
         //cout << discard_count << endl;
@@ -617,10 +665,12 @@ void balls_neighbourhood(const Mat& img, const std::vector<Vec3f>& circles, std:
         neighborhoods.push_back(neighborhood); // Store the region of interest in the vector
         //imshow("FALSE POSITIVE",neighborhood);
         //waitKey(0);
+		double ball_dim = 1.7;
 
         // Define the window size
-        ball.height = radius * 2 ;
-        ball.width = radius * 2 ;
+        ball.height = radius * 2 *ball_dim;
+        ball.width = radius * 2 *ball_dim;
+
 
         // Calculate the top-left corner of the window
         ball.x = x - ball.width/2;
