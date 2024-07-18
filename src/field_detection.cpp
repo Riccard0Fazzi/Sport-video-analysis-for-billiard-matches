@@ -113,7 +113,7 @@ std::vector<cv::Point> field_detection(const cv::Mat& inputImage, Mat & cropped_
 
 	TermCriteria criteria(TermCriteria::EPS + TermCriteria::COUNT, 10, 1.0);
 	theRNG().state = 12345;
-	kmeans(data, K, labels, criteria, 3, KMEANS_RANDOM_CENTERS, centers);
+	kmeans(data, K, labels, criteria, 3, KMEANS_PP_CENTERS, centers);
 	// Create structures to detect corners
 	vector<Mat> corners(centers.rows, canny.clone());
 	// Initialize the corners vector with images of the same size as 'canny'
@@ -183,7 +183,7 @@ std::vector<cv::Point> field_detection(const cv::Mat& inputImage, Mat & cropped_
 	}
 
 	//cv::TermCriteria criteria(cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 10, 1.0);
-	cv::kmeans(points, K, labels, criteria, 3, cv::KMEANS_RANDOM_CENTERS, centers);
+	cv::kmeans(points, K, labels, criteria, 3, cv::KMEANS_PP_CENTERS, centers);
 
 	// Convert centers to vector of points
 	for (int i = 0; i < centers.rows; ++i) {
