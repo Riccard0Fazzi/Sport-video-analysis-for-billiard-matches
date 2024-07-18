@@ -10,7 +10,35 @@ billiardBall::billiardBall(int x, int y, int width, int height, cv::Mat& image)
     // Optionally, you can add additional initialization logic here if needed
 }
 
+
 std::vector<billiardBall> ball_detection(const cv::Mat& inputImage)
+{
+
+    Mat img = inputImage.clone();
+    // Safety check on the image returned    
+	if (img.empty()) // If filename is wrong, imread returns an empty Mat object
+    {       // Print an error message using cv::Error
+       std::cerr << "Error: " << format("Failed to load image! Error code: %d", cv::Error::StsError) << std::endl;       exit(0);
+    }
+    //Detection of the billiard balls
+	std::vector<Vec3f> circles;
+    ballDetection(img,circles);
+    std::vector<Mat> circles_images;    int circle_size = 100;
+    std::vector<Mat> neighborhoods;    balls_neighbourhood(img,circles,neighborhoods, circles_images);
+    //printCircles(img,circles,circle_size,circles_images);    
+    // Draw the detected circles    
+	Mat circles_img;
+    drawCircles(img,circles_img,circles);    std::vector<billiardBall> balls; // vector of object balls
+        for(int i = 0; i < circles_images.size(); i++)
+    {       balls.emplace_back(circles[i][0],circles[i][1],circles[i][2],10,circles_images[i]);       
+    }
+    classify(img,neighborhoods, circles_images);    
+    //imshow("Circles",circles_img);
+    //waitKey(0);
+	destroyAllWindows();
+    return balls;
+}
+/*std::vector<billiardBall> ball_detection(const cv::Mat& inputImage)
 {
 
 	Mat img = inputImage.clone();
@@ -26,6 +54,7 @@ std::vector<billiardBall> ball_detection(const cv::Mat& inputImage)
 	// Detection of the billiard balls
 	std::vector<Vec3f> circles;
 	ballDetection(img,circles);
+
 
 	std::vector<Mat> circles_images;
 	int circle_size = 100;
@@ -44,12 +73,14 @@ std::vector<billiardBall> ball_detection(const cv::Mat& inputImage)
 	}
 	
 
-//	imshow("Circles",circles_img);
-//	waitKey(0);
+	imshow("Circles",circles_img);
+	waitKey(0);
 	destroyAllWindows();
 
 	return balls;
 }
+
+*/
 
 
 void mostCommonColor(const Mat& img, Vec3b& most_common_color) {
@@ -451,26 +482,120 @@ void drawCircles(const Mat& img, Mat& circles_img, const std::vector<Vec3f>& cir
 }
 
 
+void classify(const Mat& img, std::vector<Mat>& neighborhoods, std::vector<Mat>& circles_img) {
 
-void balls_neighbourhood(const Mat& img, const std::vector<Vec3f>& circles, std::vector<Mat>& circles_img) {
+    // GLOBAL EVALUATION
+
+    // Convert the image to HSV color space
+    Mat hsv_img;
+    cvtColor(img, hsv_img, COLOR_BGR2HSV_FULL);
+    std::vector<Mat> img_channels;
+    split(hsv_img, img_channels);
+
+    // Compute the mean and standard deviation for each channel
+    Scalar mh, sh;
+    meanStdDev(img_channels[0], mh, sh);
+
+    Scalar ms, ss;
+    meanStdDev(img_channels[1], ms, ss);
+
+    Scalar mv, sv;
+    meanStdDev(img_channels[2], mv, sv);
+
+    //DISCARD BASED ON MOST COMMON COLOR
+    Vec3b most_common_color;
+    mostCommonColor(hsv_img,most_common_color);
+
+    // IMAGE BALL EVALUATION
+
+    for(size_t i = 0; i < neighborhoods.size(); ++i){
+
+        // Mean and Standard deviation of the Neighborhood
+
+        Mat hsv_window;
+        cvtColor(neighborhoods[i], hsv_window, COLOR_BGR2HSV_FULL);
+        split(hsv_window, img_channels);
+
+        // Compute the mean and standard deviation for each channel
+        Scalar wmh, wsh;
+        meanStdDev(img_channels[0], wmh, wsh);
+
+        Scalar wms, wss;
+        meanStdDev(img_channels[1], wms, wss);
+
+        Scalar wmv, wsv;
+        meanStdDev(img_channels[2], wmv, wsv);
+        Vec3b w_most_common_color;
+        mostCommonColor(hsv_window,w_most_common_color);
+
+        // Mean and Standard deviation of the Ball
+
+        Mat hsv_ball;
+        cvtColor(circles_img[i], hsv_ball, COLOR_BGR2HSV_FULL);
+        split(hsv_ball, img_channels);
+
+
+        // Compute the mean and standard deviation for each channel
+        Scalar bmh, bsh;
+        meanStdDev(img_channels[0], bmh, bsh);
+
+        Scalar bms, bss;
+        meanStdDev(img_channels[1], bms, bss);
+
+        Scalar bmv, bsv;
+        meanStdDev(img_channels[2], bmv, bsv);
+        Vec3b b_most_common_color;
+        mostCommonColor(hsv_ball,b_most_common_color);
+
+        //CLASSIFICATION
+
+        int a = abs(sh[0] - wsh[0]);
+        int b = abs(ss[0] - wss[0]);
+        int c = abs(sv[0] - wsv[0]);
+        double STDdistance = sqrt(a * a + b * b + c * c);
+        cout << STDdistance << endl;
+
+        int discard_count = 0;
+
+        if(STDdistance<70) {
+            //imshow("Circles",circles_img[i]);
+            //waitKey(0);
+            //Mat save = circles_img[i].clone(); // Clone the region to store in the vector
+            //
+            //circles_img.push_back(save); // Store the region of interest in the vector
+        }
+
+        else{
+            //discard_count++;
+            imshow("FALSE POSITIVE",circles_img[i]);
+            waitKey(0);
+        }
+        //cout << "Number of discarded balls: " << endl;
+        //cout << discard_count << endl;
+    }
+}
+
+void balls_neighbourhood(const Mat& img, const std::vector<Vec3f>& circles, std::vector<Mat>& neighborhoods, std::vector<Mat>& circles_img) {
     double x, y;
     double radius;
     Rect window;
+    Rect ball;
     namedWindow("Circles");
     for(int i = 0; i < circles.size(); i++)
     {
         x = cvRound(circles[i][0]);
         y = cvRound(circles[i][1]);
-        radius = cvRound(circles[i][2]); 
+        radius = cvRound(circles[i][2]);
+        int window_dim = 4;
 
         // Define the window size
-        window.height = radius * 2;  
-        window.width = radius * 2;
-        
+        window.height = radius * 2 *window_dim;
+        window.width = radius * 2 *window_dim;
+
         // Calculate the top-left corner of the window
-        window.x = x - radius;
-        window.y = y - radius;
-        
+        window.x = x - window.width/2;
+        window.y = y - window.height/2;
+
         // Adjust window dimensions and position to ensure it stays within image bounds
         if (window.x < 0) {
             window.width += window.x;
@@ -486,62 +611,39 @@ void balls_neighbourhood(const Mat& img, const std::vector<Vec3f>& circles, std:
         if (window.y + window.height > img.rows) {
             window.height = img.rows - window.y;
         }
-		// Convert the image to HSV color space
-		Mat hsv_img;
-		cvtColor(img, hsv_img, COLOR_BGR2HSV_FULL);
-		std::vector<Mat> img_channels;
-		split(hsv_img, img_channels);
+        Mat neighborhood = img(window).clone(); // Clone the region to store in the vector
+        Point center(cvRound(window.width/2), cvRound(window.height/2));
+        circle(neighborhood,center,radius+1,Scalar(0, 0, 0),-1, LINE_AA);
+        neighborhoods.push_back(neighborhood); // Store the region of interest in the vector
+        //imshow("FALSE POSITIVE",neighborhood);
+        //waitKey(0);
 
-		// Compute the mean and standard deviation for each channel
-		Scalar mh, sh;
-		meanStdDev(img_channels[0], mh, sh);
+        // Define the window size
+        ball.height = radius * 2 ;
+        ball.width = radius * 2 ;
 
-		Scalar ms, ss;
-		meanStdDev(img_channels[1], ms, ss);
+        // Calculate the top-left corner of the window
+        ball.x = x - ball.width/2;
+        ball.y = y - ball.height/2;
 
-		Scalar mv, sv;
-		meanStdDev(img_channels[2], mv, sv);
-
-		// Mean and Standard deviation of the window
-		cvtColor(img(window), hsv_img, COLOR_BGR2HSV_FULL);
-		split(hsv_img, img_channels);
-
-		// Compute the mean and standard deviation for each channel
-		Scalar mh_window, sh_window;
-		meanStdDev(img_channels[0], mh, sh);
-
-		Scalar ms_window, ss_window;
-		meanStdDev(img_channels[1], ms, ss);
-
-		Scalar mv_window, sv_window;
-		meanStdDev(img_channels[2], mv, sv);
-		double min_distance_between_circles = static_cast<double>(img(window).cols) / 3; // 40
-		int thresh1 = 300;
-		int thresh2 = 6;
-		double min_radius = static_cast<double>(std::max(img(window).cols, img(window).rows)) / 20;
-		double max_radius = static_cast<double>(std::max(img(window).cols, img(window).rows));
-		std::vector<Vec3f> detected_circles;
-
-		Mat temp;
-		cvtColor(img(window),temp,COLOR_BGR2GRAY);
-		HoughCircles(temp,detected_circles,HOUGH_GRADIENT,1,min_distance_between_circles,thresh1,thresh2,
-                 min_radius, max_radius);
-		
-		Mat circles_img;
-		drawCircles(img(window),circles_img,detected_circles);
-
-
-		imshow("Circles",circles_img);
-		waitKey(0);
-		Mat circle_img = img(window).clone(); // Clone the region to store in the vector
-											  //
-		circles_img.push_back(circle_img); // Store the region of interest in the vector
-
-		
-
+        // Adjust window dimensions and position to ensure it stays within image bounds
+        if (ball.x < 0) {
+            ball.width += ball.x;
+            ball.x = 0;
+        }
+        if (ball.y < 0) {
+            ball.height += ball.y;
+            ball.y = 0;
+        }
+        if (ball.x +ball.width > img.cols) {
+            ball.width = img.cols - ball.x;
+        }
+        if (ball.y + ball.height > img.rows) {
+            ball.height = img.rows - ball.y;
+        }
+        circles_img.push_back(img(ball)); // Store the region of interest in the vector
     }
 }
-
 
 void printCircles(const Mat& img, const std::vector<Vec3f>& circles, int circles_img_size, std::vector<Mat>& circles_img) {
     Mat mask, ball_region;
