@@ -25,6 +25,7 @@ add_executable(BiliardVideoAnalysis
 	src/ball_detection.cpp
 	src/homography.cpp
     src/main2.cpp
+    src/classifier.cpp
     # Include other source files if needed (ball_classification.cpp, tracking.cpp, etc.)
 )
 

@@ -3,6 +3,7 @@
 #include "../include/field_detection.h"
 #include "../include/ball_detection.hpp"
 #include "../include/homography.h"
+#include "../include/classifier.h"
 using namespace cv;
 using namespace std;
 int main(int argc, char** argv) {
@@ -68,7 +69,15 @@ int main(int argc, char** argv) {
 		// RETURN: vector of object billiardBall
 		// PARAM: Mat object containing the cropped table
 		balls =	ball_detection(cropped_field);
-		// -- Field homography --
+		classify(balls,cropped_field);
+		/*namedWindow("Balls");
+		for(int i = 0; i < balls.size();i++)
+		{
+			imshow("Balls",balls[i].image);
+			waitKey(0);
+		}*/
+		
+		//-- Field homography --
 		//H = homography(field_points);
 
 		//mapPoints(H,field_points,cv::Scalar(255,0,0));
@@ -79,7 +88,9 @@ int main(int argc, char** argv) {
 
 
 		video_frames.clear(); // vector that stores each video frame
+		balls_coordinates.clear();
 		frame.release();					   // temporary object to store each single frame
+		H.release();
 		cropped_field.release();			   // cropped image to perform ball detection
 		field_points.clear();		   // vector to store the points of the contour of the field
 		balls.clear();   // vector to store object of balls

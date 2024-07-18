@@ -141,9 +141,9 @@ void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, double window_rat
 	cvtColor(temp,temp,COLOR_BGR2Lab);
 	pyrMeanShiftFiltering(temp,temp,spatial_window_radius ,color_window_radius );
 	cvtColor(temp,temp,COLOR_Lab2BGR);
-	namedWindow("MeanShift");
-	imshow("MeanShift",temp);
-	waitKey(0);
+	//namedWindow("MeanShift");
+	//imshow("MeanShift",temp);
+	//waitKey(0);
 
 
 
@@ -422,12 +422,11 @@ void ballDetection(const Mat& img, std::vector<Vec3f>& circles) {
     morphologyEx(binary_segmented_img,binary_segmented_img,MORPH_OPEN,getStructuringElement(MORPH_ELLIPSE,Size(7,7)),
                  Point(-1,-1),1); // 3
 
-
-    cv::namedWindow("Before_Morph");
-    cv::imshow("Before_Morph",binary_segmented_img);
-    cv::waitKey(0);
+    //cv::namedWindow("Before_Morph");
+    //cv::imshow("Before_Morph",binary_segmented_img);
+    //cv::waitKey(0);
     // Hough circles transformation for circle detection on the binary mask
-    double min_distance_between_circles = static_cast<double>(binary_segmented_img.cols) / 40;
+    double min_distance_between_circles = static_cast<double>(binary_segmented_img.cols) / 40; // 40
     int thresh1 = 300;
     int thresh2 = 6;
     double min_radius = static_cast<double>(std::max(binary_segmented_img.cols, binary_segmented_img.rows)) / 115;
