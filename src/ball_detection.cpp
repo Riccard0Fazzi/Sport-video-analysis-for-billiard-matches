@@ -113,13 +113,40 @@ void contrastStretching(const Mat& img, Mat& dest)  {
 }
 void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, double window_ratio) {
 
+// Calculate the window size as function of the image size
+    int window_size = static_cast<int>(std::round(static_cast<double>(std::max(img.rows,img.cols)) / window_ratio));
+
+
 	Mat temp = img.clone();
+	Mat hsv_img_mean_shift;
+    cvtColor(temp, hsv_img_mean_shift, COLOR_BGR2HSV_FULL);
+    std::vector<Mat> img_channels_mean_shift;
+    split(hsv_img_mean_shift, img_channels_mean_shift);
+
+
+	Scalar mh_F, sh_F;
+    meanStdDev(img_channels_mean_shift[0], mh_F, sh_F);
+
+    Scalar ms_F, ss_F;
+    meanStdDev(img_channels_mean_shift[1], ms_F, ss_F);
+
+    Scalar mv_F, sv_F;
+    meanStdDev(img_channels_mean_shift[2], mv_F, sv_F);
+
+
+
+	double spatial_window_radius = (0.001*window_size); 
+	double color_window_radius =  sh_F[0];
+
 	cvtColor(temp,temp,COLOR_BGR2Lab);
-	pyrMeanShiftFiltering(temp,temp,10,15);
+	pyrMeanShiftFiltering(temp,temp,spatial_window_radius ,color_window_radius );
 	cvtColor(temp,temp,COLOR_Lab2BGR);
 	namedWindow("MeanShift");
 	imshow("MeanShift",temp);
 	waitKey(0);
+
+
+
 
     // Convert the image to HSV color space
     Mat hsv_img;
@@ -140,12 +167,8 @@ void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, double window_rat
     Scalar mv, sv;
     meanStdDev(img_channels[2], mv, sv);
 
-    cout << "mh: " << mh[0] << "ms: " << ms[0] << "mv: " << mv[0] << endl;
 
-    // Calculate the window size as function of the image size
-    int window_size = static_cast<int>(std::round(static_cast<double>(std::max(img.rows,img.cols)) / window_ratio));
-
-
+    
 
     // Initialize the destination imageq
     dest = Mat::zeros(img.size(), img.type());
@@ -154,6 +177,8 @@ void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, double window_rat
     Vec3b field_color;
     mostCommonColor(img,field_color);
     // Iterate over the image with non-overlapping windows
+	
+    cout << "mh: " << mh[0]  << endl;
     for (int y = 0; y < img.rows; y += window_size) {
         for (int x = 0; x < img.cols; x += window_size) {
 
@@ -198,21 +223,23 @@ void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, double window_rat
             std::vector<int> hsv_thresholds(6);
 
             // GENERAL STD variation
-            double lower_coeff = 0.9; // 0.8
-            double higher_coeff = 1.2; // 1.2
+            double lower_coeff = 1.2; // 0.8
+            double higher_coeff = 0.9; // 1.2
 
             double lower_weight[3];
             double higher_weight[3];
 
+
 			// Hue settings for lower/upper bound differences
-			if(most_common_color[0] > mean_hue[0])
+			if(most_common_color[0] > mean_hue[0] || mh[0]<120)
 			{
-				higher_weight[0] = 0.8;
-				lower_weight[0]= 1.2;
+
+				lower_weight[0]= 0.8;
+				higher_weight[0] = 1.2;
 			} else
 			{
-				higher_weight[0] = 1.2;
-				lower_weight[0] = 0.8;
+				higher_weight[0] = 0.8;
+				lower_weight[0] = 1.2;
 			}
 			if(most_common_color[1] > mean_hue[1])
 			{
@@ -253,10 +280,12 @@ void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, double window_rat
             }
 
                      // 0.3 && h_t/10 < 0.5)
-            if(h_cond < 0.5) // case 1: non-uniform window only in Hue
+            if(h_cond < 0.3) // case 1: non-uniform window only in Hue
             {
-                hsv_thresholds[0] = static_cast<int>(lower_weight[0]*lower_coeff*h_t); // Lower bound for hue
+			                hsv_thresholds[0] = static_cast<int>(lower_weight[0]*lower_coeff*h_t); // Lower bound for hue
                 hsv_thresholds[1] = static_cast<int>(higher_weight[0]*lower_coeff*h_t); // Upper bound for hue
+
+
 
             } else {
 
@@ -285,14 +314,14 @@ void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, double window_rat
             }
 
 			       // 0.3
-            if(s_cond<0.6)
+            if(s_cond<0.3)
             {
-                hsv_thresholds[2] = static_cast<int>(lower_weight[1]*lower_coeff*s_t); // Lower bound for saturation
-                hsv_thresholds[3] = static_cast<int>(higher_weight[1]*lower_coeff*s_t); // Upper bound for saturation
+	                hsv_thresholds[2] = static_cast<int>(1000); // Lower bound for saturation
+                hsv_thresholds[3] = static_cast<int>(1000); // Upper bound for saturation
 
 
             } else {
-
+			
                 hsv_thresholds[2] = static_cast<int>(lower_weight[1]*higher_coeff*s_t);  // Lower bound for saturation
                 hsv_thresholds[3] = static_cast<int>(higher_weight[1]*higher_coeff*s_t);  // Upper bound for saturation
             }
@@ -318,14 +347,17 @@ void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, double window_rat
                 v_t = 60*mean_value[0]/mv[0]; // 60
             }
 				   // 0.6
-            if(v_cond<0.6)
+            if(v_cond<0.4)
             {
-                hsv_thresholds[4] = static_cast<int>(lower_weight[2]*lower_coeff*v_t); // Lower bound for value
+			                hsv_thresholds[4] = static_cast<int>(lower_weight[2]*lower_coeff*v_t); // Lower bound for value
                 hsv_thresholds[5] = static_cast<int>(higher_weight[2]*lower_coeff*v_t); // Upper bound for value
+				
 
 
             } else {
-
+					if(mh[0]<120 && h_cond > 0.8 && v_t/60 > 0.8)
+					higher_coeff = 1000;
+					else higher_coeff = 1;
                 hsv_thresholds[4] = static_cast<int>(lower_weight[2]*higher_coeff*v_t);  // Lower bound for value
                 hsv_thresholds[5] = static_cast<int>(higher_weight[2]*higher_coeff*v_t);  // Upper bound for value
             }
@@ -381,10 +413,16 @@ void ballDetection(const Mat& img, std::vector<Vec3f>& circles) {
     threshold(segmented_img,binary_segmented_img,0,255,THRESH_BINARY);
 
     // Morphological operators (CLOSING + OPENING), used to make more even the balls blobs
+	// closing: filling gaps & connect adjacent objects
     morphologyEx(binary_segmented_img,binary_segmented_img,MORPH_CLOSE,getStructuringElement(MORPH_ELLIPSE,Size(3, 3)),
-                 Point(-1, -1),1);
+                 Point(-1, -1),1); // 1
+	// opening: brake narrow connection between objects
     morphologyEx(binary_segmented_img,binary_segmented_img,MORPH_OPEN,getStructuringElement(MORPH_ELLIPSE,Size(3,3)),
-                 Point(-1,-1),3);
+                 Point(-1,-1),3); // 3
+    morphologyEx(binary_segmented_img,binary_segmented_img,MORPH_OPEN,getStructuringElement(MORPH_ELLIPSE,Size(7,7)),
+                 Point(-1,-1),1); // 3
+
+
     cv::namedWindow("Before_Morph");
     cv::imshow("Before_Morph",binary_segmented_img);
     cv::waitKey(0);

@@ -1,5 +1,7 @@
 // Created by Tommaso Tubaldo on 06/06/24 - Hours: 70
 #include "ball_detection.hpp"
+using namespace cv;
+using namespace std;
 
 // Structure used to store balls names and colors
 billiardBall::billiardBall(int x, int y, int width, int height, cv::Mat& image)
@@ -7,10 +9,6 @@ billiardBall::billiardBall(int x, int y, int width, int height, cv::Mat& image)
 {
     // Optionally, you can add additional initialization logic here if needed
 }
-
-// ------------------------------
-using namespace cv;
-using namespace std;
 
 std::vector<billiardBall> ball_detection(const cv::Mat& inputImage)
 {
@@ -45,11 +43,12 @@ std::vector<billiardBall> ball_detection(const cv::Mat& inputImage)
 	
 
 	imshow("Circles",circles_img);
-waitKey(0);
+	waitKey(0);
 	destroyAllWindows();
 
 	return balls;
 }
+
 
 void mostCommonColor(const Mat& img, Vec3b& most_common_color) {
     // Calculate the histogram of the image
@@ -112,13 +111,13 @@ void contrastStretching(const Mat& img, Mat& dest)  {
 
     cvtColor(hsv_img,dest,COLOR_HSV2BGR_FULL);
 }
-
-void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, std::vector<int> HSV_thresholds, double window_ratio) {
-// Convert the image to HSV color space
+void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, double window_ratio) {
+	// Convert the image to HSV color space
     Mat hsv_img;
     cvtColor(img, hsv_img, COLOR_BGR2HSV_FULL);
     std::vector<Mat> img_channels;
     split(hsv_img, img_channels);
+
 
 
     // Compute the mean and standard deviation for each channel
@@ -132,12 +131,19 @@ void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, std::vector<int> 
     Scalar mv, sv;
     meanStdDev(img_channels[2], mv, sv);
 
+    cout << "mh: " << mh[0] << "ms: " << ms[0] << "mv: " << mv[0] << endl;
+
     // Calculate the window size as function of the image size
     int window_size = static_cast<int>(std::round(static_cast<double>(std::max(img.rows,img.cols)) / window_ratio));
+
+
 
     // Initialize the destination imageq
     dest = Mat::zeros(img.size(), img.type());
 
+    // Determine the most common color in the window region by histogram evaluation
+    Vec3b field_color;
+    mostCommonColor(img,field_color);
     // Iterate over the image with non-overlapping windows
     for (int y = 0; y < img.rows; y += window_size) {
         for (int x = 0; x < img.cols; x += window_size) {
@@ -151,6 +157,7 @@ void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, std::vector<int> 
             // Determine the most common color in the window region by histogram evaluation
             Vec3b most_common_color;
             mostCommonColor(window_region,most_common_color);
+
 
 
 
@@ -177,20 +184,143 @@ void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, std::vector<int> 
 
 
             // Set thresholds based on mean and stddev
-            double k1 = 7.0; // You can adjust this value for tighter or looser thresholds
-            double k2 = 100.0; // You can adjust this value for tighter or looser thresholds
-            double k3 = 50.0; // You can adjust this value for tighter or looser thresholds
 
             // Calculate lower and upper bounds directly based on standard deviations
             std::vector<int> hsv_thresholds(6);
-            hsv_thresholds[0] = static_cast<int>(k1*nmh[0]); // Lower bound for hue
-            hsv_thresholds[1] = static_cast<int>(k1*nmh[0]); // Upper bound for hue
-            hsv_thresholds[2] = static_cast<int>(k2*nms[0]); // Lower bound for saturation
-            hsv_thresholds[3] = static_cast<int>(k2*nms[0]); // Upper bound for saturation
-            hsv_thresholds[4] = static_cast<int>(k3*nmv[0]); // Lower bound for value
-            hsv_thresholds[5] = static_cast<int>(k3*nmv[0]); // Upper bound for value
 
-			// Create a mask for the most common color in the window region
+            // GENERAL STD variation
+            double lower_coeff = 0.9; // 0.8
+            double higher_coeff = 1.2; // 1.2
+
+            double lower_weight[3];
+            double higher_weight[3];
+
+			// Hue settings for lower/upper bound differences
+			if(most_common_color[0] > mean_hue[0])
+			{
+				higher_weight[0] = 0.8;
+				lower_weight[0]= 1.2;
+			} else
+			{
+				higher_weight[0] = 1.2;
+				lower_weight[0] = 0.8;
+			}
+			if(most_common_color[1] > mean_hue[1])
+			{
+				higher_weight[1] = 0.8;
+				lower_weight[1] = 1.2;
+			} else
+			{
+				higher_weight[1] = 1.2;
+				lower_weight[1] = 0.8;
+			}
+			if(most_common_color[2] > mean_hue[2])
+			{
+				higher_weight[2] = 0.8;
+				lower_weight[2] = 1.2;
+			} else
+			{
+				higher_weight[2] = 1.2;
+				lower_weight[2] = 0.8;
+			}
+            // HUE
+
+            // STD condition
+            double h_cond;
+            if(stddev_hue[0]>sh[0]){
+                h_cond = sh[0]/stddev_hue[0];
+            }
+            else{
+                h_cond = stddev_hue[0]/sh[0];
+            }
+
+            // THRESHOLD
+            double  h_t;
+            if(mean_hue[0]>mh[0]){
+                h_t = 10*mh[0]/mean_hue[0];
+            }
+            else{
+                h_t = 10*mean_hue[0]/mh[0];
+            }
+
+                     // 0.3 && h_t/10 < 0.5)
+            if(h_cond < 0.5) // case 1: non-uniform window only in Hue
+            {
+                hsv_thresholds[0] = static_cast<int>(lower_weight[0]*lower_coeff*h_t); // Lower bound for hue
+                hsv_thresholds[1] = static_cast<int>(higher_weight[0]*lower_coeff*h_t); // Upper bound for hue
+
+            } else {
+
+                hsv_thresholds[0] = static_cast<int>(lower_weight[0]*higher_coeff*h_t); // Lower bound for hue
+                hsv_thresholds[1] = static_cast<int>(higher_weight[0]*higher_coeff*h_t);  // Upper bound for hue
+            }
+
+            // SATURATION
+
+            // STD condition
+            double s_cond;
+            if(stddev_saturation[0]>ss[0]){
+                s_cond = ss[0]/stddev_saturation[0];
+            }
+            else{
+                s_cond = stddev_saturation[0]/ss[0];
+            }
+
+            // THRESHOLD
+            double  s_t;
+            if(mean_saturation[0]>ms[0]){
+                s_t = 60*ms[0]/mean_saturation[0];
+            }
+            else{
+                s_t = 60*mean_saturation[0]/ms[0];
+            }
+
+			       // 0.3
+            if(s_cond<0.6)
+            {
+                hsv_thresholds[2] = static_cast<int>(lower_weight[1]*lower_coeff*s_t); // Lower bound for saturation
+                hsv_thresholds[3] = static_cast<int>(higher_weight[1]*lower_coeff*s_t); // Upper bound for saturation
+
+
+            } else {
+
+                hsv_thresholds[2] = static_cast<int>(lower_weight[1]*higher_coeff*s_t);  // Lower bound for saturation
+                hsv_thresholds[3] = static_cast<int>(higher_weight[1]*higher_coeff*s_t);  // Upper bound for saturation
+            }
+
+
+
+            //VALUE
+
+            // STD condition
+            double v_cond;
+            if(stddev_value[0]>sv[0]){
+                v_cond = sv[0]/stddev_value[0];
+            }
+            else{
+                v_cond = stddev_value[0]/sv[0];
+            }
+            // THRESHOLD
+            double  v_t;
+            if(mean_value[0]>mv[0]){
+                v_t = 60*mv[0]/mean_value[0]; // 60
+            }
+            else{
+                v_t = 60*mean_value[0]/mv[0]; // 60
+            }
+				   // 0.6
+            if(v_cond<0.6)
+            {
+                hsv_thresholds[4] = static_cast<int>(lower_weight[2]*lower_coeff*v_t); // Lower bound for value
+                hsv_thresholds[5] = static_cast<int>(higher_weight[2]*lower_coeff*v_t); // Upper bound for value
+
+
+            } else {
+
+                hsv_thresholds[4] = static_cast<int>(lower_weight[2]*higher_coeff*v_t);  // Lower bound for value
+                hsv_thresholds[5] = static_cast<int>(higher_weight[2]*higher_coeff*v_t);  // Upper bound for value
+            }
+            // Create a mask for the most common color in the window region
             Scalar lower_bound(
                     std::max(most_common_color[0] - hsv_thresholds[0], 0),
                     std::max(most_common_color[1] - hsv_thresholds[2], 0),
@@ -201,15 +331,16 @@ void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, std::vector<int> 
                     std::min(most_common_color[1] + hsv_thresholds[3], 255),
                     std::min(most_common_color[2] + hsv_thresholds[5], 255)
             );
-            cout << "-----------------" << endl;
-            cout << hsv_thresholds[0] << endl;
-            cout << hsv_thresholds[2] << endl;
-            cout << hsv_thresholds[4] << endl;
             Mat mask;
-            inRange(window_region, lower_bound, upper_bound, mask); 
-			// Invert the mask to remove the most common color
+            inRange(window_region, lower_bound, upper_bound, mask);
+
+
+
+            // Invert the mask to remove the most common color
             Mat inverted_mask;
             bitwise_not(mask,inverted_mask);
+
+
 
             // Apply the mask to the corresponding region in the destination image
             Mat dest_region = dest(window);
@@ -219,70 +350,8 @@ void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, std::vector<int> 
 }
 
 
-void ballSelection(const Mat& img, const std::vector<Vec3f>& circle_vector, std::vector<Vec3f>& new_circle_vector, const std::vector<billiardSet> billiard_tables) {
-    Mat mask, ball_region, hsv_ball_region;
-    Vec3b dominant_color;
-    Vec3b diff = {0,0,0};
-    bool is_white,is_black,is_yellow,is_blue,is_red,is_purple,is_orange,is_green,is_brown;
-
-    // Iterate for each circle
-    for (int i = 0; i < circle_vector.size(); i++) {
-        // Define circle center and radius
-        Point center(cvRound(circle_vector[i][0]), cvRound(circle_vector[i][1]));
-        int radius = cvRound(circle_vector[i][2]);
-
-        // Compute the circle mask and apply it to img
-        mask = Mat::zeros(img.size(),CV_8U);
-        ball_region = Mat::zeros(img.size(),CV_8U);
-        circle(mask,center,radius,Scalar(255),-1);
-        Mat eroded_mask;
-        erode(mask,eroded_mask, getStructuringElement(MORPH_ELLIPSE,Size(3,3)),Point(-1,-1),4);
-        img.copyTo(ball_region,eroded_mask);
-
-        // Convert the ball region in HSV color-space
-        cvtColor(ball_region,hsv_ball_region, COLOR_BGR2HSV_FULL);
-
-        // Compute the dominant color
-        mostCommonColor(hsv_ball_region,dominant_color);
-
-        // Dilate the mask if the detected color is invalid
-        if (dominant_color == Vec3b(0,0,0)) {
-            Mat dilated_mask;
-            dilate(eroded_mask,dilated_mask,getStructuringElement(MORPH_ELLIPSE,Size(3,3)));
-            img.copyTo(ball_region,dilated_mask);
-            cvtColor(ball_region,hsv_ball_region, COLOR_BGR2HSV_FULL);
-            mostCommonColor(hsv_ball_region,dominant_color);
-        }
-
-        // verify that the dominant color belongs to one of the billiard ball colors
-        for (const auto & billiard_table : billiard_tables) {
-            for (const auto & ball : billiard_table.billiard_set) {
-                // Compute the absolute difference between dominant and ball color
-                absdiff(dominant_color,ball.color_value,diff);
-
-                // Check the color ranges
-                is_white = (ball.color_name == "White") && (diff[0] < 4) && (diff[1] < 9) && (diff[2] < 2);
-                is_black = (ball.color_name == "Black") && (diff[0] < 2) && (diff[1] < 2) && (diff[2] < 2);
-                is_yellow = (ball.color_name == "Yellow") && (diff[0] < 4) && (diff[1] < 25) && (diff[2] < 2);
-                is_blue = (ball.color_name == "Blue") && (diff[0] < 2) && (diff[1] < 2) && (diff[2] < 2);
-                is_red = (ball.color_name == "Red") && (diff[0] < 2) && (diff[1] < 17) && (diff[2] < 13);
-                is_purple = (ball.color_name == "Purple") && (diff[0] < 4) && (diff[1] < 25) && (diff[2] < 5);
-                is_orange = (ball.color_name == "Orange") && (diff[0] < 4) && (diff[1] < 17) && (diff[2] < 13);
-                is_green = (ball.color_name == "Green") && (diff[0] < 2) && (diff[1] < 2) && (diff[2] < 2);
-                is_brown = (ball.color_name == "Brown") && (diff[0] < 2) && (diff[1] < 2) && (diff[2] < 9);
-
-                // If dominant color is accepted, it is appended to the new circle vector
-                if (is_white || is_black || is_yellow || is_blue || is_red || is_purple || is_orange || is_green || is_brown) {
-                    new_circle_vector.emplace_back(circle_vector[i]);
-                }
-                diff = {0,0,0};
-            }
-        }
-    }
-}
-
 void ballDetection(const Mat& img, std::vector<Vec3f>& circles) {
-   // Bilateral Filter [d:7, sigmaColor:60, sigmaSpace:300]
+    // Bilateral Filter [d:7, sigmaColor:60, sigmaSpace:300]
     Mat filtered_img;
     bilateralFilter(img,filtered_img,7,60,300);
 
@@ -291,10 +360,12 @@ void ballDetection(const Mat& img, std::vector<Vec3f>& circles) {
 
     // Color-based segmentation applied to obtain the balls mask
     Mat segmented_img;
-    double window_ratio = 14.6;
-    std::vector<int> HSV_thresholds = {15, 100, 50};
-    adaptiveColorBasedSegmentation(filtered_img,segmented_img,HSV_thresholds,window_ratio);
+    double window_ratio = 11.5; //14.6;
+    //std::vector<int> HSV_thresholds = {8, 200, 70};
+    adaptiveColorBasedSegmentation(filtered_img,segmented_img,window_ratio);
 
+	// Here the image is converted into a binary one
+	// ideally only the billiard balls should be highlighted
     // Conversion to gray-scale and binary thresholding of the balls mask
     cvtColor(segmented_img,segmented_img,COLOR_BGR2GRAY);
     Mat binary_segmented_img;
@@ -305,9 +376,9 @@ void ballDetection(const Mat& img, std::vector<Vec3f>& circles) {
                  Point(-1, -1),1);
     morphologyEx(binary_segmented_img,binary_segmented_img,MORPH_OPEN,getStructuringElement(MORPH_ELLIPSE,Size(3,3)),
                  Point(-1,-1),3);
-	cv::namedWindow("Before_Morph");
-	cv::imshow("Before_Morph",binary_segmented_img);
-	cv::waitKey(0);
+    cv::namedWindow("Before_Morph");
+    cv::imshow("Before_Morph",binary_segmented_img);
+    cv::waitKey(0);
     // Hough circles transformation for circle detection on the binary mask
     double min_distance_between_circles = static_cast<double>(binary_segmented_img.cols) / 40;
     int thresh1 = 300;
@@ -332,49 +403,7 @@ void drawCircles(const Mat& img, Mat& circles_img, const std::vector<Vec3f>& cir
     }
 }
 
-/*
-void printCircles(const Mat& img, const std::vector<Vec3f>& circles, int circles_img_size, std::vector<Mat>& circles_img) {
-    Mat mask, ball_region;
-    for (int i = 0; i < circles.size(); i++) {
-        // Define circle center and radius
-        Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
-        int radius = cvRound(circles[i][2]);
 
-        // Compute the circle mask and apply it to img
-        mask = Mat::zeros(img.size(),CV_8U);
-        ball_region = Mat::zeros(img.size(),CV_8U);
-        circle(mask,center,radius,Scalar(255),-1);
-        img.copyTo(ball_region,mask);
-
-        // Convert the image to grayscale
-        Mat gray_ball_region;
-        cvtColor(ball_region,gray_ball_region,COLOR_BGR2GRAY);
-
-        // Threshold the grayscale image to get a binary mask
-        Mat binary_ball_region;
-        threshold(gray_ball_region,binary_ball_region,1,255,THRESH_BINARY);
-
-        // Find the bounding box of the non-black region (subject)
-        Rect boundingBox = boundingRect(binary_ball_region);
-
-        // Crop the image using the bounding box coordinates
-        Mat cropped_ball_region = ball_region(boundingBox);
-
-        // Create a new black image of the desired fixed size
-        Size img_size (circles_img_size,circles_img_size);
-        circles_img.push_back(Mat::zeros(img_size, img.type()));
-
-        // Calculate the position to place the subject in the center
-        int xOffset = (img_size.width - boundingBox.width) / 2;
-        int yOffset = (img_size.height - boundingBox.height) / 2;
-
-        // Place the cropped subject in the center of the new image
-        Mat extended_ball_region;
-        cropped_ball_region.copyTo(extended_ball_region(Rect(xOffset, yOffset, boundingBox.width, boundingBox.height)));
-        circles_img.push_back(extended_ball_region);
-    }
-}
- */
 
 void printCircles(const Mat& img, const std::vector<Vec3f>& circles, int circles_img_size, std::vector<Mat>& circles_img) {
     Mat mask, ball_region;

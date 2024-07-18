@@ -238,7 +238,6 @@ std::vector<cv::Point> field_detection(const cv::Mat& inputImage, Mat & cropped_
 		}
 	}
 
-
 	//CROP FIELD MASK
 	Rect bounding_box;
 	bounding_box = boundingRect(contours[1]);
