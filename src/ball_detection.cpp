@@ -515,8 +515,23 @@ void balls_neighbourhood(const Mat& img, const std::vector<Vec3f>& circles, std:
 
 		Scalar mv_window, sv_window;
 		meanStdDev(img_channels[2], mv, sv);
+		double min_distance_between_circles = static_cast<double>(img(window).cols) / 3; // 40
+		int thresh1 = 300;
+		int thresh2 = 6;
+		double min_radius = static_cast<double>(std::max(img(window).cols, img(window).rows)) / 20;
+		double max_radius = static_cast<double>(std::max(img(window).cols, img(window).rows));
+		std::vector<Vec3f> detected_circles;
 
-		imshow("Circles",img(window));
+		Mat temp;
+		cvtColor(img(window),temp,COLOR_BGR2GRAY);
+		HoughCircles(temp,detected_circles,HOUGH_GRADIENT,1,min_distance_between_circles,thresh1,thresh2,
+                 min_radius, max_radius);
+		
+		Mat circles_img;
+		drawCircles(img(window),circles_img,detected_circles);
+
+
+		imshow("Circles",circles_img);
 		waitKey(0);
 		Mat circle_img = img(window).clone(); // Clone the region to store in the vector
 											  //
