@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
 		// RETURN: vector of object billiardBall
 		// PARAM: Mat object containing the cropped table
 		balls =	ball_detection(cropped_field);
-		classify(balls,cropped_field);
+		//classify(balls,cropped_field);
 		/*namedWindow("Balls");
 		for(int i = 0; i < balls.size();i++)
 		{

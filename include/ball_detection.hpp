@@ -19,6 +19,7 @@ struct billiardBall {
 	billiardBall(int x, int y, int width, int height, cv::Mat& image);
 };
 
+void balls_neighbourhood(const cv::Mat& img, const std::vector<cv::Vec3f>& circles, std::vector<cv::Mat>& circles_img);
 
 // Structure used to contain each billiard sets of balls of different colors
 struct billiardSet {
