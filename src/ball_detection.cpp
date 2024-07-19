@@ -219,7 +219,7 @@ void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, double window_rat
             double higher_weight[3];
 
 
-			// Hue settings for lower/upper bound differences
+			// Hue settings for lower/upper bound differencesl
 			if(most_common_color[0] > mean_hue[0])// || mh[0]<120)
 			{
 
