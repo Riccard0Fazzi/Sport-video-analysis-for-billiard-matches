@@ -32,7 +32,7 @@ std::vector<billiardBall> ball_detection(const cv::Mat& inputImage)
         for(int i = 0; i < circles_images.size(); i++)
     {       balls.emplace_back(circles[i][0],circles[i][1],circles[i][2],10,circles_images[i]);       
     }
-    classify(img,neighborhoods, circles_images);    
+    classify(img,neighborhoods, circles_images);
     //imshow("Circles",circles_img);
     //waitKey(0);
 	//destroyAllWindows();
@@ -442,13 +442,79 @@ bool isCircular(vector<Point> contour, Size size) {
     double area = contourArea(contour);
     double perimeter = arcLength(contour, true);
     double circularity = 4 * CV_PI * (area / (perimeter * perimeter));
-    // Get first and last points
+    // Convexity conditions
 
     std::vector<Point> approx;
     double arc_len = cv::arcLength(contour, true);
     double almost_closed = 0.1;
     cv::approxPolyDP(contour, approx, almost_closed * arc_len, true);
+
+    // almost closed circles
+    cv::Point2f center;
+    float radius;
+    cv::minEnclosingCircle(contour, center, radius);
+
+    // ALMOST CLOSED CIRCLES CONDITION
+    if(isContourConvex(approx)==false){
+
+        // IF IT'S IN THE CENTER
+        if((abs(center.x- size.width/2)<3)&&(abs(center.y- size.height/2)<5)){
+            //cout << "OUT OF CENTER" << endl;
+            //cout << abs(center.x- size.width/2) << " " << abs(center.y- size.height/2) << endl;
+            return true;
+        }
+        cout << "DEBUG" << endl;
+        cout << abs(center.x- size.width/2) << " " << abs(center.y- size.height/2) << endl;
+
+        return false;
+    }
+    // CLOSED CIRCLES CONDITION
+    if((abs(center.x- size.width/2)>3)&&(abs(center.y- size.height/2)>5)){
+
+        //cout << abs(center.x- size.width/2) << " " << abs(center.y- size.height/2) << endl;
+        return false;
+    }
+
+
+
+    return true;
+    /*
+
+    // ALMOST A CIRCLE
+    if(isContourConvex(approx)==false){
+        if(radius > 2.5 && radius < 13) {
+            if((abs(center.x- size.width/2)<3)&&(abs(center.y- size.height/2)<5))
+            cout << abs(center.x- size.width/2) << " " << abs(center.y- size.height/2) << endl;
+            return true;
+        }
+    }
+
+    // CIRCLE
+    if(radius > 2.5 && radius < 13) {
+        cout << abs(center.x- size.width/2) << " " << abs(center.y- size.height/2) << endl;
+        return true;
+    }
+    return false;*/
+
+    /*
+    if(radius > 2.5 && radius < 13){
+        // is it not too small ?
+        if (contour.size() < 8 || contour.size() > 20) {
+            return false;
+        }
+        if((abs(center.x- size.width/2)>3)&&(abs(center.y- size.height/2)>5)){
+            //cout << "OUT OF CENTER" << endl;
+            //cout << abs(center.x- size.width/2) << " " << abs(center.y- size.height/2) << endl;
+            return false;
+        }
+        return true;
+    }
+    return false;*/
+
+
+    /*
     // is it convex ?
+
     if(isContourConvex(approx)){
 
         // is it not too small ?
@@ -470,13 +536,13 @@ bool isCircular(vector<Point> contour, Size size) {
         double num_points = static_cast<double>(convexHull.size());
         Point2d centroid = { x_sum / num_points, y_sum / num_points };
         if((abs(centroid.x- size.width/2)>3)&&(abs(centroid.y- size.height/2)>5)){
-            cout << "OUT OF CENTER" << endl;
+            //cout << "OUT OF CENTER" << endl;
             return false;
         }
 
         return true;
     }
-    return false;
+    return false;*/
 
     /*
     if(distance<3){
@@ -610,49 +676,38 @@ void classify(const Mat& img, std::vector<Mat>& neighborhoods, std::vector<Mat>&
 		vector<vector<Point>> contours;
 		findContours(edged, contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
         cout << "---------" << endl;
-		for (auto &contour : contours) {
-			if (isCircular(contour,img_channels[0].size())) {
-				// Accept the contour as a ball
-				drawContours(image, vector<vector<Point>>{contour}, -1, Scalar(0, 255, 0), 0.2);
-			} else {
-				// Reject the contour as a false positive
-				drawContours(image, vector<vector<Point>>{contour}, -1, Scalar(0, 0, 255), 0.2);
-			}
-		}
-        //CLASSIFICATION
-
+        //cout << contours.size() << endl;
         int a = abs(sh[0] - wsh[0]);
         int b = abs(ss[0] - wss[0]);
         int c = abs(sv[0] - wsv[0]);
         double STDdistance = sqrt(a * a + b * b + c * c);
+        if(STDdistance<70){
+            for (auto &contour : contours) {
+                if (isCircular(contour, img_channels[0].size())) {
+                    cv::Point2f center;
+                    float radius;
+                    cv::minEnclosingCircle(contour, center, radius);
+                    circle(image, center, radius, Scalar(203, 192, 255), 1, LINE_AA);
+                    // Accept the contour as a ball
+                    drawContours(image, vector<vector<Point>>{contour}, -1, Scalar(0, 255, 0), 0.2);
+                } else {
+                    // Reject the contour as a false positive
+                    drawContours(image, vector<vector<Point>>{contour}, -1, Scalar(0, 0, 255), 0.2);
+                }
+                Size newSize(100, 100);  // Width and height
 
 
-        int discard_count = 0;
+            }
+            // Resize the image
+            Mat resizedImage;
+            resize(circles_img[i], resizedImage, newSize);
+            imshow("cannyImg", resizedCanny);
 
-        if(STDdistance<70) {
-			// Specify the new size
-			Size newSize(100, 100);  // Width and height
-
-			// Resize the image
-			Mat resizedImage;
-			resize(circles_img[i], resizedImage, newSize);
-	        imshow("cannyImg",resizedCanny);
-
-            imshow("True_Positives",resizedImage);
+            imshow("True_Positives", resizedImage);
             waitKey(0);
-            //Mat save = circles_img[i].clone(); // Clone the region to store in the vector
-            //
-            //circles_img.push_back(save); // Store the region of interest in the vector
         }
 
-        else{
-            //discard_count++;
-            //imshow("FALSE POSITIVE",circles_img[i]);
-            //waitKey(0);
-        }
-        //cout << "Number of discarded balls: " << endl;
-        //cout << discard_count << endl;
-    }
+		}
 }
 
 void balls_neighbourhood(const Mat& img, const std::vector<Vec3f>& circles, std::vector<Mat>& neighborhoods, std::vector<Mat>& circles_img) {
@@ -697,7 +752,7 @@ void balls_neighbourhood(const Mat& img, const std::vector<Vec3f>& circles, std:
         neighborhoods.push_back(neighborhood); // Store the region of interest in the vector
         //imshow("FALSE POSITIVE",neighborhood);
         //waitKey(0);
-		double ball_dim = 1.75;
+		double ball_dim = 2.5;
 
         // Define the window size
         ball.height = radius * 2 *ball_dim;
