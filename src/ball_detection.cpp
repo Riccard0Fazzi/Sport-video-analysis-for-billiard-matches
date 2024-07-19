@@ -797,6 +797,9 @@ void balls_neighbourhood(const Mat& img, const std::vector<Vec3f>& circles, std:
         circles_img.push_back(img(ball)); // Store the region of interest in the vector
     }
 }
+
+
+
 void printCircles(const Mat& img, const std::vector<Vec3f>& circles, int circles_img_size, std::vector<Mat>& circles_img) {
     Mat mask, ball_region;
     for (size_t i = 0; i < circles.size(); ++i) {
