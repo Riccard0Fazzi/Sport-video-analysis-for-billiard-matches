@@ -220,8 +220,8 @@ void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, double window_rat
             double higher_weight[3];
 
 
-			// Hue settings for lower/upper bound differencesl
-			if(most_common_color[0] > mean_hue[0])// || mh[0]<120)
+			// Hue settings for lower/upper bound differences
+			if(most_common_color[0] > mean_hue[0])
 			{
 
 				lower_weight[0]= 0.8;
@@ -231,7 +231,7 @@ void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, double window_rat
 				higher_weight[0] = 0.8;
 				lower_weight[0] = 1.2;
 			}
-			if(most_common_color[1] > mean_hue[1])
+			if(most_common_color[1] > mean_hue[0])
 			{
 				higher_weight[1] = 0.8;
 				lower_weight[1] = 1.2;
@@ -240,7 +240,7 @@ void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, double window_rat
 				higher_weight[1] = 1.2;
 				lower_weight[1] = 0.8;
 			}
-			if(most_common_color[2] > mean_hue[2])
+			if(most_common_color[2] > mean_hue[0])
 			{
 				higher_weight[2] = 0.8;
 				lower_weight[2] = 1.2;
@@ -249,6 +249,10 @@ void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, double window_rat
 				higher_weight[2] = 1.2;
 				lower_weight[2] = 0.8;
 			}
+            if(mh[0]<120&&abs(field_color[0]-mean_hue[0])<10){
+                lower_coeff = 1; // 0.8
+                higher_coeff = 0.7;
+            }
             // HUE
 
             // STD condition
@@ -407,9 +411,9 @@ void ballDetection(const Mat& img, std::vector<Vec3f>& circles) {
 	
     morphologyEx(binary_segmented_img,binary_segmented_img,MORPH_CLOSE,getStructuringElement(MORPH_ELLIPSE,Size(3, 3)),Point(-1, -1),1); // 1
 																																		 
-    morphologyEx(binary_segmented_img,binary_segmented_img,MORPH_OPEN,getStructuringElement(MORPH_ELLIPSE,Size(3,3)),Point(-1,-1),3); // 3
+    morphologyEx(binary_segmented_img,binary_segmented_img,MORPH_OPEN,getStructuringElement(MORPH_ELLIPSE,Size(3,3)),Point(-1,-1),4); // 3
 	// opening: brake narrow connection between objects
-    morphologyEx(binary_segmented_img,binary_segmented_img,MORPH_OPEN,getStructuringElement(MORPH_ELLIPSE,Size(3,3)),Point(-1,-1),1); // 3
+   // morphologyEx(binary_segmented_img,binary_segmented_img,MORPH_OPEN,getStructuringElement(MORPH_ELLIPSE,Size(3,3)),Point(-1,-1),1); // 3
 
     cv::namedWindow("Before_Morph");
     cv::imshow("Before_Morph",binary_segmented_img);
