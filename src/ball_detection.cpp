@@ -28,14 +28,15 @@ std::vector<billiardBall> ball_detection(const cv::Mat& inputImage)
     //printCircles(img,circles,circle_size,circles_images);    
     // Draw the detected circles    
 	Mat circles_img;
-    drawCircles(img,circles_img,circles);    std::vector<billiardBall> balls; // vector of object balls
-        for(int i = 0; i < circles_images.size(); i++)
+    drawCircles(img,circles_img,circles); 
+ 	std::vector<billiardBall> balls; // vector of object balls
+	for(int i = 0; i < circles_images.size(); i++)
     {       balls.emplace_back(circles[i][0],circles[i][1],circles[i][2],10,circles_images[i]);       
     }
     classify(img,neighborhoods, circles_images);
     imshow("Circles",circles_img);
     waitKey(0);
-	//destroyAllWindows();
+	destroyAllWindows();
     return balls;
 }
 
@@ -408,7 +409,7 @@ void ballDetection(const Mat& img, std::vector<Vec3f>& circles) {
 	// opening: brake narrow connection between objects
     morphologyEx(binary_segmented_img,binary_segmented_img,MORPH_OPEN,getStructuringElement(MORPH_ELLIPSE,Size(3,3)),
                  Point(-1,-1),3); // 3
-    morphologyEx(binary_segmented_img,binary_segmented_img,MORPH_OPEN,getStructuringElement(MORPH_ELLIPSE,Size(7,7)),
+    morphologyEx(binary_segmented_img,binary_segmented_img,MORPH_OPEN,getStructuringElement(MORPH_ELLIPSE,Size(3,3)),
                  Point(-1,-1),1); // 3
 
     //cv::namedWindow("Before_Morph");
@@ -437,6 +438,7 @@ void drawCircles(const Mat& img, Mat& circles_img, const std::vector<Vec3f>& cir
         circle(circles_img,center,radius,Scalar(0, 0, 255),1, LINE_AA);
     }
 }
+
 
 bool isCircular(vector<Point> contour, Size size) {
     double area = contourArea(contour);
@@ -629,17 +631,17 @@ void classify(const Mat& img, std::vector<Mat>& neighborhoods, std::vector<Mat>&
         Vec3b b_most_common_color;
         mostCommonColor(hsv_ball,b_most_common_color);
 
-		// FAZZI's method ------------------
+        // FAZZI's method ------------------
 
-		Mat image = circles_img[i];
-		Mat gray, blurred, edged;
+        Mat image = circles_img[i];
+        Mat gray, blurred, edged;
 
-		//cvtColor(image,image,COLOR_BGR2Lab);
-		//pyrMeanShiftFiltering(image,image,1,1);
-		//cvtColor(image,image,COLOR_Lab2BGR);
+        //cvtColor(image,image,COLOR_BGR2Lab);
+        //pyrMeanShiftFiltering(image,image,1,1);
+        //cvtColor(image,image,COLOR_Lab2BGR);
 
-		cvtColor(image, gray, COLOR_BGR2GRAY);
-		GaussianBlur(gray, blurred, Size(3, 3),bsh[0],bsh[0]);
+        cvtColor(image, gray, COLOR_BGR2GRAY);
+        GaussianBlur(gray, blurred, Size(3, 3),bsh[0],bsh[0]);
         double nsh;
         if(bsh[0]>sh[0]){
             nsh = sh[0]/bsh[0];
@@ -682,46 +684,46 @@ void classify(const Mat& img, std::vector<Mat>& neighborhoods, std::vector<Mat>&
                      Point(-1,-1),3); // 3
         double TL = otsu_thresh_h*nsv;
         double TH = 2*TL;
-		Canny(otsu_thresh_image, edged, TL, TH); // blurred
-		Size newSize(100, 100);  // Width and height
+        Canny(otsu_thresh_image, edged, TL, TH); // blurred
+        Size newSize(100, 100);  // Width and height
 
-		// Resize the image
-		Mat resizedCanny;
-		resize(otsu_thresh_image, resizedCanny, newSize); // edged
+        // Resize the image
+        Mat resizedCanny;
+        resize(otsu_thresh_image, resizedCanny, newSize); // edged
 
 
-		vector<vector<Point>> contours;
-		findContours(edged, contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
+        vector<vector<Point>> contours;
+        findContours(edged, contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
         cout << "---------" << endl;
         //cout << contours.size() << endl;
         int a = abs(sh[0] - wsh[0]);
         int b = abs(ss[0] - wss[0]);
         int c = abs(sv[0] - wsv[0]);
         double STDdistance = sqrt(a * a + b * b + c * c);
-            for (auto &contour : contours) {
-                if (isCircular(contour, img_channels[0].size())) {
-                    cv::Point2f center;
-                    float radius;
-                    cv::minEnclosingCircle(contour, center, radius);
-                    circle(image, center, radius, Scalar(203, 192, 255), 1, LINE_AA);
-                    // Accept the contour as a ball
-                    drawContours(image, vector<vector<Point>>{contour}, -1, Scalar(0, 255, 0), 0.2);
-                } else {
-                    // Reject the contour as a false positive
-                    drawContours(image, vector<vector<Point>>{contour}, -1, Scalar(0, 0, 255), 0.2);
-                }
-                Size newSize(100, 100);  // Width and height
-
-
+        for (auto &contour : contours) {
+            if (isCircular(contour, img_channels[0].size())) {
+                cv::Point2f center;
+                float radius;
+                cv::minEnclosingCircle(contour, center, radius);
+                circle(image, center, radius, Scalar(203, 192, 255), 1, LINE_AA);
+                // Accept the contour as a ball
+                drawContours(image, vector<vector<Point>>{contour}, -1, Scalar(0, 255, 0), 0.2);
+            } else {
+                // Reject the contour as a false positive
+                drawContours(image, vector<vector<Point>>{contour}, -1, Scalar(0, 0, 255), 0.2);
             }
-            // Resize the image
-            Mat resizedImage;
-            resize(circles_img[i], resizedImage, newSize);
-            //imshow("cannyImg", resizedCanny);
+            Size newSize(100, 100);  // Width and height
 
-            //imshow("True_Positives", resizedImage);
-            //waitKey(0);
+
         }
+        // Resize the image
+        Mat resizedImage;
+        resize(circles_img[i], resizedImage, newSize);
+        //imshow("cannyImg", resizedCanny);
+
+        //imshow("True_Positives", resizedImage);
+        //waitKey(0);
+    }
 
 }
 
@@ -767,7 +769,7 @@ void balls_neighbourhood(const Mat& img, const std::vector<Vec3f>& circles, std:
         neighborhoods.push_back(neighborhood); // Store the region of interest in the vector
         //imshow("FALSE POSITIVE",neighborhood);
         //waitKey(0);
-		double ball_dim = 2.5;
+        double ball_dim = 2.5;
 
         // Define the window size
         ball.height = radius * 2 *ball_dim;
@@ -796,7 +798,6 @@ void balls_neighbourhood(const Mat& img, const std::vector<Vec3f>& circles, std:
         circles_img.push_back(img(ball)); // Store the region of interest in the vector
     }
 }
-
 void printCircles(const Mat& img, const std::vector<Vec3f>& circles, int circles_img_size, std::vector<Mat>& circles_img) {
     Mat mask, ball_region;
     for (size_t i = 0; i < circles.size(); ++i) {
