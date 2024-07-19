@@ -438,15 +438,62 @@ void drawCircles(const Mat& img, Mat& circles_img, const std::vector<Vec3f>& cir
     }
 }
 
-bool isCircular(vector<Point> contour, double nsh, double nsv) {
+bool isCircular(vector<Point> contour, Size size) {
     double area = contourArea(contour);
     double perimeter = arcLength(contour, true);
     double circularity = 4 * CV_PI * (area / (perimeter * perimeter));
-    if((abs(contour.front().x - contour.back().x) < 3 )&&(abs(contour.front().y - contour.back().y) < 3 )){
-        cout << area << endl;
+    // Get first and last points
+
+    std::vector<Point> approx;
+    double arc_len = cv::arcLength(contour, true);
+    double almost_closed = 0.1;
+    cv::approxPolyDP(contour, approx, almost_closed * arc_len, true);
+    // is it convex ?
+    if(isContourConvex(approx)){
+
+        // is it not too small ?
+        if (contour.size() < 8) {
+            return false;
+        }
+
+        // is it in the middle of the window ????
+        double x_sum = 0.0;
+        double y_sum = 0.0;
+        std::vector<Point> convexHull;
+        cv::convexHull(contour, convexHull);
+
+        for (const auto& point : convexHull) {
+            x_sum += point.x;
+            y_sum += point.y;
+        }
+
+        double num_points = static_cast<double>(convexHull.size());
+        Point2d centroid = { x_sum / num_points, y_sum / num_points };
+        if((abs(centroid.x- size.width/2)>3)&&(abs(centroid.y- size.height/2)>5)){
+            cout << "OUT OF CENTER" << endl;
+            return false;
+        }
+
         return true;
     }
-	return circularity > nsh*nsv;  // threshold for circularity
+    return false;
+
+    /*
+    if(distance<3){
+        if(area>4.1){
+            if(circularity<0.02){
+                return false;
+            }
+            cout << area << endl;
+            return true;
+        }
+        else{
+
+            return false;
+        }
+    }
+	return false; //circularity > nsh*nsv;  // threshold for circularity
+     */
 }
 
 void classify(const Mat& img, std::vector<Mat>& neighborhoods, std::vector<Mat>& circles_img) {
@@ -562,9 +609,9 @@ void classify(const Mat& img, std::vector<Mat>& neighborhoods, std::vector<Mat>&
 
 		vector<vector<Point>> contours;
 		findContours(edged, contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
-
+        cout << "---------" << endl;
 		for (auto &contour : contours) {
-			if (isCircular(contour,nsh,nsv)) {
+			if (isCircular(contour,img_channels[0].size())) {
 				// Accept the contour as a ball
 				drawContours(image, vector<vector<Point>>{contour}, -1, Scalar(0, 255, 0), 0.2);
 			} else {
@@ -590,7 +637,6 @@ void classify(const Mat& img, std::vector<Mat>& neighborhoods, std::vector<Mat>&
 			Mat resizedImage;
 			resize(circles_img[i], resizedImage, newSize);
 	        imshow("cannyImg",resizedCanny);
-	        waitKey(0);
 
             imshow("True_Positives",resizedImage);
             waitKey(0);
