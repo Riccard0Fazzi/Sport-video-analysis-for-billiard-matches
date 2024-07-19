@@ -33,8 +33,8 @@ std::vector<billiardBall> ball_detection(const cv::Mat& inputImage)
     {       balls.emplace_back(circles[i][0],circles[i][1],circles[i][2],10,circles_images[i]);       
     }
     classify(img,neighborhoods, circles_images);
-    //imshow("Circles",circles_img);
-    //waitKey(0);
+    imshow("Circles",circles_img);
+    waitKey(0);
 	//destroyAllWindows();
     return balls;
 }
@@ -220,7 +220,7 @@ void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, double window_rat
 
 
 			// Hue settings for lower/upper bound differences
-			if(most_common_color[0] > mean_hue[0] || mh[0]<120)
+			if(most_common_color[0] > mean_hue[0])// || mh[0]<120)
 			{
 
 				lower_weight[0]= 0.8;
@@ -344,7 +344,7 @@ void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, double window_rat
 
 
             } else {
-					if(mh[0]<120 && h_cond > 0.8 && v_t/60 > 0.8)
+					if(mh[0]<120)// && h_cond > 0.8 && v_t/60 > 0.8)
 					higher_coeff = 1000;
 					else higher_coeff = 1;
                 hsv_thresholds[4] = static_cast<int>(lower_weight[2]*higher_coeff*v_t);  // Lower bound for value
@@ -463,8 +463,8 @@ bool isCircular(vector<Point> contour, Size size) {
             //cout << abs(center.x- size.width/2) << " " << abs(center.y- size.height/2) << endl;
             return true;
         }
-        cout << "DEBUG" << endl;
-        cout << abs(center.x- size.width/2) << " " << abs(center.y- size.height/2) << endl;
+        //cout << "DEBUG" << endl;
+        //cout << abs(center.x- size.width/2) << " " << abs(center.y- size.height/2) << endl;
 
         return false;
     }
@@ -656,8 +656,25 @@ void classify(const Mat& img, std::vector<Mat>& neighborhoods, std::vector<Mat>&
         }
         Mat otsu_thresh_image;
         Mat discard;
-        double otsu_thresh_h = cv::threshold(img_channels[0], otsu_thresh_image, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
-        double otsu_thresh_v = cv::threshold(img_channels[2], discard, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
+
+        // BLACK BALLS TRACTATION
+
+        bool color_cond = abs(b_most_common_color[0] - most_common_color[0])<50;
+        cout << "COLOR COND " << color_cond << endl;
+        bool center_black_cond = img_channels[2].at<uchar>(img_channels[2].rows/2,img_channels[2].cols/2) < 65;
+        cout << "CENTER BLACK COND " << static_cast<int>(img_channels[2].at<uchar>(img_channels[2].rows/2,img_channels[2].cols/2)) << endl;
+        double otsu_thresh_h;
+        if(color_cond && center_black_cond){
+            otsu_thresh_h = cv::threshold(img_channels[2], otsu_thresh_image, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
+            morphologyEx(otsu_thresh_image,otsu_thresh_image,MORPH_OPEN,getStructuringElement(MORPH_ELLIPSE,Size(3,3)),
+                         Point(-1,-1),1); // 3
+            cout << "DEBUG" << endl;
+        }
+        else{
+            otsu_thresh_h = cv::threshold(img_channels[0], otsu_thresh_image, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
+
+        }
+
         morphologyEx(otsu_thresh_image,otsu_thresh_image,MORPH_CLOSE,getStructuringElement(MORPH_ELLIPSE,Size(3, 3)),
                      Point(-1, -1),1); // 1
         // opening: brake narrow connection between objects
@@ -681,7 +698,6 @@ void classify(const Mat& img, std::vector<Mat>& neighborhoods, std::vector<Mat>&
         int b = abs(ss[0] - wss[0]);
         int c = abs(sv[0] - wsv[0]);
         double STDdistance = sqrt(a * a + b * b + c * c);
-        if(STDdistance<70){
             for (auto &contour : contours) {
                 if (isCircular(contour, img_channels[0].size())) {
                     cv::Point2f center;
@@ -701,13 +717,12 @@ void classify(const Mat& img, std::vector<Mat>& neighborhoods, std::vector<Mat>&
             // Resize the image
             Mat resizedImage;
             resize(circles_img[i], resizedImage, newSize);
-            imshow("cannyImg", resizedCanny);
+            //imshow("cannyImg", resizedCanny);
 
-            imshow("True_Positives", resizedImage);
-            waitKey(0);
+            //imshow("True_Positives", resizedImage);
+            //waitKey(0);
         }
 
-		}
 }
 
 void balls_neighbourhood(const Mat& img, const std::vector<Vec3f>& circles, std::vector<Mat>& neighborhoods, std::vector<Mat>& circles_img) {
