@@ -345,7 +345,7 @@ void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, double window_rat
 
 
             } else {
-					if(mh[0]<120)// && h_cond > 0.8 && v_t/60 > 0.8)
+					if(mh[0]<120 && h_cond > 0.8 && v_t/60 > 0.8)
 					higher_coeff = 1000;
 					else higher_coeff = 1;
                 hsv_thresholds[4] = static_cast<int>(lower_weight[2]*higher_coeff*v_t);  // Lower bound for value
@@ -404,17 +404,16 @@ void ballDetection(const Mat& img, std::vector<Vec3f>& circles) {
 
     // Morphological operators (CLOSING + OPENING), used to make more even the balls blobs
 	// closing: filling gaps & connect adjacent objects
-    morphologyEx(binary_segmented_img,binary_segmented_img,MORPH_CLOSE,getStructuringElement(MORPH_ELLIPSE,Size(3, 3)),
-                 Point(-1, -1),1); // 1
+	
+    morphologyEx(binary_segmented_img,binary_segmented_img,MORPH_CLOSE,getStructuringElement(MORPH_ELLIPSE,Size(3, 3)),Point(-1, -1),1); // 1
+																																		 
+    morphologyEx(binary_segmented_img,binary_segmented_img,MORPH_OPEN,getStructuringElement(MORPH_ELLIPSE,Size(3,3)),Point(-1,-1),3); // 3
 	// opening: brake narrow connection between objects
-    morphologyEx(binary_segmented_img,binary_segmented_img,MORPH_OPEN,getStructuringElement(MORPH_ELLIPSE,Size(3,3)),
-                 Point(-1,-1),3); // 3
-    morphologyEx(binary_segmented_img,binary_segmented_img,MORPH_OPEN,getStructuringElement(MORPH_ELLIPSE,Size(3,3)),
-                 Point(-1,-1),1); // 3
+    morphologyEx(binary_segmented_img,binary_segmented_img,MORPH_OPEN,getStructuringElement(MORPH_ELLIPSE,Size(3,3)),Point(-1,-1),1); // 3
 
-    //cv::namedWindow("Before_Morph");
-    //cv::imshow("Before_Morph",binary_segmented_img);
-    //cv::waitKey(0);
+    cv::namedWindow("Before_Morph");
+    cv::imshow("Before_Morph",binary_segmented_img);
+    cv::waitKey(0);
     // Hough circles transformation for circle detection on the binary mask
     double min_distance_between_circles = static_cast<double>(binary_segmented_img.cols) / 40; // 40
     int thresh1 = 300;
