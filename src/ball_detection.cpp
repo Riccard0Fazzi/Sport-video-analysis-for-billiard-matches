@@ -742,6 +742,14 @@ bool isBall(vector<Point> contour, Point2f c) {
         }
     }
 
+    // ISI IT INSIDE THE CONTOUR
+
+    if(pointPolygonTest(contour, c, false)>0){
+        return true;
+    }
+
+    /*
+
     // TOO BIG CONDITION
     // area is not a good index, really big contours have still small areas somehow
 
@@ -762,7 +770,7 @@ bool isBall(vector<Point> contour, Point2f c) {
     }
     cout << "MIN DISTANCE " << endl;
     cout << min_distance << endl;
-    cout << "NOT CLOSE" << endl;
+    cout << "NOT CLOSE" << endl;*/
     return false;
 }
 
@@ -950,22 +958,84 @@ void balls_neighbourhood(const Mat& img, const std::vector<Vec3f>& circles, std:
         ball.x = x - ball.width/2;
         ball.y = y - ball.height/2;
 
+        // BORDER HANDLING
+
+        // UPPER-LEFT CORNER
+        if(ball.x<0&&ball.y<0){
+            ball.height = ball.height + ball.y;
+            ball.width = ball.width + ball.x;
+            ball.x = 0;
+            ball.y = 0;
+        }
+        // LEFT-SIDE CORNER
+        if(ball.x<0&&ball.y>0&& ball.y+ball.height < img.rows){
+            ball.width = ball.width + ball.x;
+            ball.x = 0;
+        }
+        // LOWER-LEFT CORNER
+        if(ball.x<0&&ball.y+ball.height > img.rows){
+            ball.height = img.rows - ball.y;
+            ball.width = ball.width + ball.x;
+            ball.x = 0;
+        }
+        // LOWER-CENTERED CORNER
+        if(ball.y+ball.height > img.rows && ball.x+ball.width < img.cols && ball.x>0){
+            ball.height = img.rows - ball.y;
+        }
+        // LOWER-RIGHT CORNER
+        if(ball.y+ball.height > img.rows && ball.x+ball.width > img.cols) {
+            ball.height = img.rows - ball.y;
+            ball.width = img.cols-ball.x;
+        }
+        // RIGHT-SIDE CORNER
+        if(ball.y>0&& ball.x+ball.width > img.cols&& ball.y+ball.height < img.rows) {
+            ball.width = img.cols-ball.x;
+        }
+        // UPPER-RIGHT CORNER
+        if(ball.y<0&& ball.x+ball.width > img.cols) {
+            ball.height = ball.height + ball.y;
+            ball.width = ball.width + ball.x;
+            ball.y = 0;
+        }
+        // UPPER_CENTERED CORNER
+        if(ball.y<0&&ball.x >0 &&ball.x+ball.width <= img.cols ){
+            ball.height = ball.height + ball.y;
+            ball.y = 0;
+        }
+
+
+
+
+        /*
         // Adjust window dimensions and position to ensure it stays within image bounds
         if (ball.x < 0) {
-            ball.width += ball.x;
+            cout << " x < 0 "<< endl;
+            //ball.width += ball.x;
+            ball.width = ball.width + ball.x;
             ball.x = 0;
         }
         if (ball.y < 0) {
-            ball.height += ball.y;
+            cout << " y < 0 "<< endl;
+            //ball.height += ball.y;
+            ball.height = ball.height + ball.y;
             ball.y = 0;
         }
         if (ball.x +ball.width > img.cols) {
+            cout << " x > limit "<< endl;
+            //ball.width = img.cols - ball.x;
+            ball.x = ball.x + ball.width - img.cols + ball.x;
             ball.width = img.cols - ball.x;
         }
         if (ball.y + ball.height > img.rows) {
+            //ball.height = img.rows - ball.y;
+            cout << " y > limit "<< endl;
+            ball.y = ball.y + ball.height - img.rows + ball.y;
             ball.height = img.rows - ball.y;
-        }
+        }*/
         Mat image = img(ball).clone();
+        imshow("DEBUG",image);
+        waitKey();
+
         circles_images.push_back(image); // Store the region of interest in the vector
         Point2f c (ball.width/2,ball.height/2);
         centers.push_back(c);
