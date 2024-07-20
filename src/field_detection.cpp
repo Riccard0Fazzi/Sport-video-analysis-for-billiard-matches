@@ -126,8 +126,9 @@ std::vector<cv::Point> field_detection(const cv::Mat& inputImage, Mat & cropped_
 	for (size_t i = 0; i < centers.rows; i++) {
 
 		// Extract rho and theta
-		double rho = centers.at<float>(i, 0), theta = centers.at<float>(i, 1);
-
+        // Extract rho and theta
+        double rho = centers.at<float>(i, 0);
+        double theta = centers.at<float>(i, 1);
 		// Calculate direction vector
 		double a = cos(theta), b = sin(theta);
 		double x0 = a * rho, y0 = b * rho;
@@ -248,7 +249,7 @@ std::vector<cv::Point> field_detection(const cv::Mat& inputImage, Mat & cropped_
 	cvtColor(cropped_field,temp_cropped_field,COLOR_BGR2HSV_FULL);
 	Vec3b most_common_color;
 	Rect square_rect((temp_cropped_field.cols-60)/2,(temp_cropped_field.rows-60)/2,60,60);
-	mostCommonColor(temp_cropped_field(square_rect),most_common_color);	
+	mostCommonColor(temp_cropped_field(square_rect),most_common_color);
 	Mat rgb_mat(100, 100, CV_8UC3, most_common_color);	
 	cvtColor(rgb_mat,rgb_mat,COLOR_HSV2BGR_FULL);
 

@@ -23,8 +23,9 @@ std::vector<billiardBall> ball_detection(const cv::Mat& inputImage)
     //Detection of the billiard balls
 	std::vector<Vec3f> circles;
     ballDetection(img,circles);
-    std::vector<Mat> circles_images;    int circle_size = 100;
-    std::vector<Mat> neighborhoods;    balls_neighbourhood(img,circles,neighborhoods, circles_images);
+    std::vector<Mat> circles_images;
+    std::vector<cv::Point2f> centers;
+    balls_neighbourhood(img,circles, circles_images, centers);
     //printCircles(img,circles,circle_size,circles_images);    
     // Draw the detected circles    
 	Mat circles_img;
@@ -33,10 +34,10 @@ std::vector<billiardBall> ball_detection(const cv::Mat& inputImage)
 	for(int i = 0; i < circles_images.size(); i++)
     {       balls.emplace_back(circles[i][0],circles[i][1],circles[i][2],10,circles_images[i]);       
     }
-    classify(img,neighborhoods, circles_images);
-    imshow("Circles",circles_img);
-    waitKey(0);
-	destroyAllWindows();
+    classify(img, circles_images,centers);
+    //imshow("Circles",circles_img);
+    //waitKey(0);
+	//destroyAllWindows();
     return balls;
 }
 
@@ -52,14 +53,14 @@ void mostCommonColor(const Mat& img, Vec3b& most_common_color) {
     int channels[] = {0, 1, 2};
 
     // Create a mask to exclude black pixels
-    Mat mask;
-    inRange(img, Scalar(0, 0, 0), Scalar(0, 0, 1), mask); // Only mask black pixels
-    bitwise_not(mask, mask); // Invert mask to include non-black pixels
+    //Mat mask;
+    //inRange(img, Scalar(0, 0, 0), Scalar(0, 0, 1), mask); // Only mask black pixels
+    //bitwise_not(mask, mask); // Invert mask to include non-black pixels
 
     // Compute the histogram
     Mat hist;
-    calcHist(&img, 1, channels, mask, hist, 3, hist_size, ranges);
-
+    //calcHist(&img, 1, channels, mask, hist, 3, hist_size, ranges);
+    calcHist(&img, 1, channels, Mat(), hist, 3, hist_size, ranges);
     // Find the bin with the maximum count
     double max_val = 0;
     int max_idx[3] = {0, 0, 0};
@@ -102,13 +103,42 @@ void contrastStretching(const Mat& img, Mat& dest)  {
 
     cvtColor(hsv_img,dest,COLOR_HSV2BGR_FULL);
 }
+
 void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, double window_ratio) {
+    Mat temp = img.clone();
+    // Convert the image to HSV color space
+    Mat hsv_img;
+    cvtColor(temp, hsv_img, COLOR_BGR2HSV_FULL);
+    std::vector<Mat> img_channels;
+    split(hsv_img, img_channels);
+
+
+
+    // Compute the mean and standard deviation for each channel
+    Scalar mh, sh;
+    meanStdDev(img_channels[0], mh, sh);
+
+
+    Scalar ms, ss;
+    meanStdDev(img_channels[1], ms, ss);
+
+    Scalar mv, sv;
+    meanStdDev(img_channels[2], mv, sv);
+
+    // Initialize the destination image
+    dest = Mat::zeros(img.size(), img.type());
+
+    // Determine the most common color in the window region by histogram evaluation
+    Vec3b field_color;
+    mostCommonColor(img,field_color);
+    window_ratio = window_ratio + sh[0];
+    cout << window_ratio << endl;
 
 // Calculate the window size as function of the image size
     int window_size = static_cast<int>(std::round(static_cast<double>(std::max(img.rows,img.cols)) / window_ratio));
 
 
-	Mat temp = img.clone();
+
 	Mat hsv_img_mean_shift;
     cvtColor(temp, hsv_img_mean_shift, COLOR_BGR2HSV_FULL);
     std::vector<Mat> img_channels_mean_shift;
@@ -139,36 +169,36 @@ void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, double window_rat
 
 
 
-    // Convert the image to HSV color space
-    Mat hsv_img;
-    cvtColor(temp, hsv_img, COLOR_BGR2HSV_FULL);
-    std::vector<Mat> img_channels;
-    split(hsv_img, img_channels);
 
 
+    // COLOR VARIATION
 
-    // Compute the mean and standard deviation for each channel
-    Scalar mh, sh;
-    meanStdDev(img_channels[0], mh, sh);
+    // Apply Sobel operator in Y direction
+    cv::Mat grad_x;
+    cv::Sobel(img_channels[0], grad_x, CV_64F, 1, 0, 3);
+
+    // Apply Sobel operator in Y direction
+    cv::Mat grad_y;
+    cv::Sobel(img_channels[0], grad_y, CV_64F, 0, 1, 3);
+
+    // Compute the gradient magnitude
+    cv::Mat hue_mag;
+    cv::magnitude(grad_x, grad_y, hue_mag);
+
+    // BRIGHTNESS VARIATION
+
+    // Apply Sobel operator in Y direction
+    cv::Sobel(img_channels[2], grad_x, CV_64F, 1, 0, 3);
+
+    // Apply Sobel operator in Y direction
+    cv::Sobel(img_channels[2], grad_y, CV_64F, 0, 1, 3);
+
+    // Compute the gradient magnitude
+    cv::Mat val_mag;
+    cv::magnitude(grad_x, grad_y, val_mag);
 
 
-    Scalar ms, ss;
-    meanStdDev(img_channels[1], ms, ss);
-
-    Scalar mv, sv;
-    meanStdDev(img_channels[2], mv, sv);
-
-
-    
-
-    // Initialize the destination imageq
-    dest = Mat::zeros(img.size(), img.type());
-
-    // Determine the most common color in the window region by histogram evaluation
-    Vec3b field_color;
-    mostCommonColor(img,field_color);
     // Iterate over the image with non-overlapping windows
-	
     for (int y = 0; y < img.rows; y += window_size) {
         for (int x = 0; x < img.cols; x += window_size) {
 
@@ -177,6 +207,8 @@ void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, double window_rat
             int window_height = std::min(window_size, img.rows - y);
             Rect window(x, y, window_width, window_height);
             Mat window_region = hsv_img(window);
+            Mat window_hue_mag = hue_mag(window);
+            Mat window_val_mag = val_mag(window);
 
             // Determine the most common color in the window region by histogram evaluation
             Vec3b most_common_color;
@@ -206,8 +238,163 @@ void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, double window_rat
             Scalar nmv = mean_value/mv;
             Scalar nsv = stddev_value/sv;
 
-
+            /*
             // Set thresholds based on mean and stddev
+
+            // Calculate lower and upper bounds directly based on standard deviations
+            std::vector<int> hsv_thresholds(6);
+
+            // GENERAL STD variation
+            double higher_coeff = 1.2; // 0.8
+            double lower_coeff = 0.9; // 1.2
+
+            double lower_weight[3] = {1,1,1};
+            double higher_weight[3] = {1,1,1};;
+
+
+            // Hue settings for lower/upper bound differences
+
+            if(most_common_color[0] > field_color[0])
+            {
+
+                lower_weight[0]= 0.8;
+                higher_weight[0] = 1.2;
+            } else
+            {
+                higher_weight[0] = 0.8;
+                lower_weight[0] = 1.2;
+            }
+            if(most_common_color[1] > field_color[0])
+            {
+                higher_weight[1] = 0.8;
+                lower_weight[1] = 1.2;
+            } else
+            {
+                higher_weight[1] = 1.2;
+                lower_weight[1] = 0.8;
+            }
+            if(most_common_color[2] > field_color[0])
+            {
+                higher_weight[2] = 0.8;
+                lower_weight[2] = 1.2;
+            } else
+            {
+                higher_weight[2] = 1.2;
+                lower_weight[2] = 0.8;
+            }
+
+
+            if(mh[0]<120&&abs(field_color[0]-mean_hue[0])<10){
+                lower_coeff = 1; // 0.8
+                higher_coeff = 0.7;
+            }
+            // HUE
+
+            // STD condition
+            double h_cond;
+            if(stddev_hue[0]>sh[0]){
+                h_cond = sh[0]/stddev_hue[0];
+            }
+            else{
+                h_cond = stddev_hue[0]/sh[0];
+            }
+
+            // THRESHOLD
+            double  h_t;
+            int h = 10;
+            // if the ball and field have the same color but the variance is different then it's green ball on green
+            if(abs(most_common_color[0] - field_color[0])<10&&h_cond)
+            if(mean_hue[0]>mh[0]){
+                h_t = h*mh[0]/mean_hue[0];
+            }
+            else{
+                h_t = h*mean_hue[0]/mh[0];
+            }
+
+            // 0.3 && h_t/10 < 0.5)
+            if(h_cond < 0.3) // if h_cond small then I want bigger threshold -> higher coeff
+            {
+                hsv_thresholds[0] = static_cast<int>(lower_weight[0]*higher_coeff*h_t); // Lower bound for hue
+                hsv_thresholds[1] = static_cast<int>(higher_weight[0]*higher_coeff*h_t); // Upper bound for hue
+
+
+
+            } else {
+
+                hsv_thresholds[0] = static_cast<int>(lower_weight[0]*lower_coeff*h_t); // Lower bound for hue
+                hsv_thresholds[1] = static_cast<int>(higher_weight[0]*lower_coeff*h_t);  // Upper bound for hue
+            }
+
+            // SATURATION
+
+            // STD condition
+            double s_cond;
+            if(stddev_saturation[0]>ss[0]){
+                s_cond = ss[0]/stddev_saturation[0];
+            }
+            else{
+                s_cond = stddev_saturation[0]/ss[0];
+            }
+
+            // THRESHOLD
+            double  s_t;
+            if(mean_saturation[0]>ms[0]){
+                s_t = 60*ms[0]/mean_saturation[0];
+            }
+            else{
+                s_t = 60*mean_saturation[0]/ms[0];
+            }
+
+            // 0.3
+            if(s_cond<0.3)  // if s_cond small then I want the biggest threshold -> 1000
+            {
+                hsv_thresholds[2] = static_cast<int>(1000); // Lower bound for saturation
+                hsv_thresholds[3] = static_cast<int>(1000); // Upper bound for saturation
+
+
+            } else {
+
+                hsv_thresholds[2] = static_cast<int>(lower_weight[1]*lower_coeff*s_t);  // Lower bound for saturation
+                hsv_thresholds[3] = static_cast<int>(higher_weight[1]*lower_coeff*s_t);  // Upper bound for saturation
+            }
+
+
+
+            //VALUE
+
+            // STD condition
+            double v_cond;
+            if(stddev_value[0]>sv[0]){
+                v_cond = sv[0]/stddev_value[0];
+            }
+            else{
+                v_cond = stddev_value[0]/sv[0];
+            }
+            // THRESHOLD
+            double  v_t;
+            if(mean_value[0]>mv[0]){
+                v_t = 60*mv[0]/mean_value[0]; // 60
+            }
+            else{
+                v_t = 60*mean_value[0]/mv[0]; // 60
+            }
+            // 0.6
+            if(v_cond<0.4)
+            {
+                hsv_thresholds[4] = static_cast<int>(lower_weight[2]*higher_coeff*v_t); // Lower bound for value
+                hsv_thresholds[5] = static_cast<int>(higher_weight[2]*higher_coeff*v_t); // Upper bound for value
+
+
+
+            } else {
+                hsv_thresholds[4] = static_cast<int>(lower_weight[2]*lower_coeff*v_t);  // Lower bound for value
+                hsv_thresholds[5] = static_cast<int>(higher_weight[2]*lower_coeff*v_t);  // Upper bound for value
+            }
+
+            */
+
+
+            /*
 
             // Calculate lower and upper bounds directly based on standard deviations
             std::vector<int> hsv_thresholds(6);
@@ -355,6 +542,12 @@ void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, double window_rat
                 hsv_thresholds[4] = static_cast<int>(lower_weight[2]*higher_coeff*v_t);  // Lower bound for value
                 hsv_thresholds[5] = static_cast<int>(higher_weight[2]*higher_coeff*v_t);  // Upper bound for value
             }
+
+
+            */
+
+
+            /*
             // Create a mask for the most common color in the window region
             Scalar lower_bound(
                     std::max(most_common_color[0] - hsv_thresholds[0], 0),
@@ -365,6 +558,77 @@ void adaptiveColorBasedSegmentation(const Mat& img, Mat& dest, double window_rat
                     std::min(most_common_color[0] + hsv_thresholds[1], 180),
                     std::min(most_common_color[1] + hsv_thresholds[3], 255),
                     std::min(most_common_color[2] + hsv_thresholds[5], 255)
+            );*/
+            // Create a mask for the most common color in the window region
+
+            //  MEAN AND STD OF COLOR VARIATION IN SUBWINDOW
+            Scalar m_hue_mag, s_hue_mag;
+            meanStdDev(window_hue_mag, m_hue_mag, s_hue_mag);
+
+            //  MEAN AND STD OF BRIGHTNESS VARIATION IN SUBWINDOW
+            Scalar m_val_mag, s_val_mag;
+            meanStdDev(window_val_mag, m_val_mag, s_val_mag);
+
+
+
+            int HUE_THRESH = 10; //10;
+            int SAT_THRESH = 55; //60;
+            int VAL_THRESH = 66; //+ 0.1*s_val_mag[0]; //60;
+            /*
+            // Compute the Euclidean distance
+            double distance = computeEuclideanDistance(most_common_color, field_color);
+
+            imshow("GREEN ON GREEN",img(window));
+            waitKey();
+            cout << most_common_color << endl;
+
+            if(distance<40||(distance<40&&s_hue_mag[0]<30) ||s_hue_mag[0]>400){
+                HUE_THRESH = 1000; //10;
+                SAT_THRESH = 1000; //60;
+                VAL_THRESH = 1000;
+            }
+            else{
+                if(mh[0]<120&&mean_hue[0]<field_color[0]){ //mean_hue[2]<field_color[2]&&distance<60
+                    //VAL_THRESH = 66;
+                    //imshow("GREEN ON GREEN",img(window));
+                    //waitKey();
+                    //cout <<"mean hue " << mean_hue[0] << "field_color " << static_cast<int>(field_color[0]) << endl;
+                }
+            }*/
+
+
+
+
+
+            // if similar to field color and small variation remove
+            /*
+            if(abs(most_common_color[0] - field_color[0])<50 && stddev[0] < 4.0 ){
+                //imshow("GREEN ON GREEN",img(window));
+                //waitKey();
+                //cout << stddev << endl;
+                HUE_THRESH = 1000;
+                SAT_THRESH = 1000;
+                VAL_THRESH = 1000;
+            }*/ /*
+            if(abs(most_common_color[0] - field_color[0])<50 && stddev[0] < 4.0 ){
+                //imshow("GREEN ON GREEN",img(window));
+                //waitKey();
+                //cout << stddev << endl;
+                HUE_THRESH = 1000;
+                SAT_THRESH = 1000;
+                VAL_THRESH = 1000;
+            }*/
+
+
+            Scalar lower_bound(
+                    std::max(most_common_color[0] - HUE_THRESH, 0),
+                    std::max(most_common_color[1] - SAT_THRESH, 0),
+                    std::max(most_common_color[2] - VAL_THRESH, 0)
+            );
+            Scalar upper_bound(
+                    std::min(most_common_color[0] + HUE_THRESH, 180),
+                    std::min(most_common_color[1] + SAT_THRESH, 255),
+                    std::min(most_common_color[2] + VAL_THRESH, 255)
             );
             Mat mask;
             inRange(window_region, lower_bound, upper_bound, mask);
@@ -395,7 +659,7 @@ void ballDetection(const Mat& img, std::vector<Vec3f>& circles) {
 
     // Color-based segmentation applied to obtain the balls mask
     Mat segmented_img;
-    double window_ratio = 11.5; //14.6;
+    double window_ratio = 10; //14.6; //40
     //std::vector<int> HSV_thresholds = {8, 200, 70};
     adaptiveColorBasedSegmentation(filtered_img,segmented_img,window_ratio);
 
@@ -408,12 +672,13 @@ void ballDetection(const Mat& img, std::vector<Vec3f>& circles) {
 
     // Morphological operators (CLOSING + OPENING), used to make more even the balls blobs
 	// closing: filling gaps & connect adjacent objects
-	
+
     morphologyEx(binary_segmented_img,binary_segmented_img,MORPH_CLOSE,getStructuringElement(MORPH_ELLIPSE,Size(3, 3)),Point(-1, -1),1); // 1
 																																		 
     morphologyEx(binary_segmented_img,binary_segmented_img,MORPH_OPEN,getStructuringElement(MORPH_ELLIPSE,Size(3,3)),Point(-1,-1),4); // 3
 	// opening: brake narrow connection between objects
    // morphologyEx(binary_segmented_img,binary_segmented_img,MORPH_OPEN,getStructuringElement(MORPH_ELLIPSE,Size(3,3)),Point(-1,-1),1); // 3
+
 
     //cv::namedWindow("Before_Morph");
     //cv::imshow("Before_Morph",binary_segmented_img);
@@ -442,8 +707,12 @@ void drawCircles(const Mat& img, Mat& circles_img, const std::vector<Vec3f>& cir
     }
 }
 
+// Function to calculate the Euclidean distance between two points
+double distance(const Point& p1, const Point& p2) {
+    return (abs(p1.x - p2.x)  + abs(p1.y - p2.y));
+}
 
-bool isCircular(vector<Point> contour, Size size) {
+bool isCircular(vector<Point> contour, Point2f c) {
     double area = contourArea(contour);
     double perimeter = arcLength(contour, true);
     double circularity = 4 * CV_PI * (area / (perimeter * perimeter));
@@ -459,11 +728,30 @@ bool isCircular(vector<Point> contour, Size size) {
     float radius;
     cv::minEnclosingCircle(contour, center, radius);
 
+
+    // Initialize the minimum distance with a large value
+    double min_distance = DBL_MAX;
+
+    // Loop through all points in the contour
+    for (const Point& point : contour) {
+        // Calculate the distance from the contour point to the center point
+        double d = distance(point, c);
+
+        // Update the minimum distance if a smaller distance is found
+        if (d < min_distance) {
+            min_distance = d;
+        }
+    }
+
+
+
+    /*
+
     // ALMOST CLOSED CIRCLES CONDITION
     if(isContourConvex(approx)==false){
 
-        // IF IT'S IN THE CENTER
-        if((abs(center.x- size.width/2)<3)&&(abs(center.y- size.height/2)<5)){
+        // IF IT'S IN THE CENTER AND NOT TOO BIG
+        if((abs(center.x- size.width/2)<3)&&(abs(center.y- size.height/2)<5)&&(abs(radius- size.width/2)>10)){
             //cout << "OUT OF CENTER" << endl;
             //cout << abs(center.x- size.width/2) << " " << abs(center.y- size.height/2) << endl;
             return true;
@@ -474,15 +762,66 @@ bool isCircular(vector<Point> contour, Size size) {
         return false;
     }
     // CLOSED CIRCLES CONDITION
-    if((abs(center.x- size.width/2)>3)&&(abs(center.y- size.height/2)>5)){
+    if((abs(center.x- size.width/2)>3)&&(abs(center.y- size.height/2)>5)&&(abs(radius- size.width/2)>10)){
 
+        //cout << abs(center.x- size.width/2) << " " << abs(center.y- size.height/2) << endl;
+        return false;
+    }*/
+
+
+        /*
+    // IF IT'S IN THE CENTER AND NOT TOO BIG
+    if(min_distance > 10 || (abs(radius- size.width/2)>25.1)){
+        //cout << "OUT OF CENTER" << endl;
         //cout << abs(center.x- size.width/2) << " " << abs(center.y- size.height/2) << endl;
         return false;
     }
 
 
+    return true;*/
 
-    return true;
+    /*
+    // IT'S CENTERED OR CLOSE TO THE CENTER
+    if((min_distance < 4 ||(abs(center.x- c.x)<5)&&(abs(center.y- c.y)<5))) {
+        // IS IT TOO BIG OR NOT CONVEX ???
+        if(area > 415 || isContourConvex(approx)==false ){
+            cout << "FIRST" << endl;
+            cout << "area " << area << endl;
+            return false;
+        }
+        cout << "AREA " << endl;
+        cout << area << endl;
+
+
+        return true;
+    }
+    cout << "LAST" << endl;
+    return false;*/
+
+
+    // IS IT CENTERED ?
+    if(abs(center.x- c.x)<5&&abs(center.y- c.y)<5) {
+        cout << "AREA " << endl;
+        cout << area << endl;
+
+
+        return true;
+    }
+    if(min_distance<=3 && isContourConvex(approx)){
+        return true;
+    }
+    // Check if the point is inside the contour
+    if(pointPolygonTest(contour, c, false)>0){
+        return true;
+    }
+    cout << "MIN DISTANCE " << endl;
+    cout << min_distance << endl;
+    cout << "NOT CLOSE" << endl;
+    return false;
+
+
+
+
     /*
 
     // ALMOST A CIRCLE
@@ -567,7 +906,7 @@ bool isCircular(vector<Point> contour, Size size) {
      */
 }
 
-void classify(const Mat& img, std::vector<Mat>& neighborhoods, std::vector<Mat>& circles_img) {
+void classify(const Mat& img, std::vector<Mat>& circles_img,std::vector<cv::Point2f>& centers) {
 
     // GLOBAL EVALUATION
 
@@ -593,27 +932,8 @@ void classify(const Mat& img, std::vector<Mat>& neighborhoods, std::vector<Mat>&
 
     // IMAGE BALL EVALUATION
 
-    for(size_t i = 0; i < neighborhoods.size(); ++i){
+    for(size_t i = 0; i < circles_img.size(); ++i){
 
-
-
-        // Mean and Standard deviation of the Neighborhood
-
-        Mat hsv_window;
-        cvtColor(neighborhoods[i], hsv_window, COLOR_BGR2HSV_FULL);
-        split(hsv_window, img_channels);
-
-        // Compute the mean and standard deviation for each channel
-        Scalar wmh, wsh;
-        meanStdDev(img_channels[0], wmh, wsh);
-
-        Scalar wms, wss;
-        meanStdDev(img_channels[1], wms, wss);
-
-        Scalar wmv, wsv;
-        meanStdDev(img_channels[2], wmv, wsv);
-        Vec3b w_most_common_color;
-        mostCommonColor(hsv_window,w_most_common_color);
 
         // Mean and Standard deviation of the Ball
 
@@ -636,7 +956,7 @@ void classify(const Mat& img, std::vector<Mat>& neighborhoods, std::vector<Mat>&
 
         // FAZZI's method ------------------
 
-        Mat image = circles_img[i];
+        Mat image = circles_img[i].clone();
         Mat gray, blurred, edged;
 
         //cvtColor(image,image,COLOR_BGR2Lab);
@@ -645,50 +965,39 @@ void classify(const Mat& img, std::vector<Mat>& neighborhoods, std::vector<Mat>&
 
         cvtColor(image, gray, COLOR_BGR2GRAY);
         GaussianBlur(gray, blurred, Size(3, 3),bsh[0],bsh[0]);
-        double nsh;
-        if(bsh[0]>sh[0]){
-            nsh = sh[0]/bsh[0];
-        }
-        else{
-            nsh = bsh[0]/sh[0];
-        }
-        double nsv;
-        if(bsv[0]>sv[0]){
-            nsv = sv[0]/bsv[0];
-        }
-        else{
-            nsv = bsv[0]/sv[0];
-        }
+
         Mat otsu_thresh_image;
         Mat discard;
 
         // BLACK BALLS TRACTATION
 
         bool color_cond = abs(b_most_common_color[0] - most_common_color[0])<50;
-        cout << "COLOR COND " << color_cond << endl;
+        //cout << "COLOR COND " << color_cond << endl;
         bool center_black_cond = img_channels[2].at<uchar>(img_channels[2].rows/2,img_channels[2].cols/2) < 65;
-        cout << "CENTER BLACK COND " << static_cast<int>(img_channels[2].at<uchar>(img_channels[2].rows/2,img_channels[2].cols/2)) << endl;
-        double otsu_thresh_h;
+        //cout << "CENTER BLACK COND " << static_cast<int>(img_channels[2].at<uchar>(img_channels[2].rows/2,img_channels[2].cols/2)) << endl;
+
+        double otsu_thresh_h;/*
         if(color_cond && center_black_cond){
             otsu_thresh_h = cv::threshold(img_channels[2], otsu_thresh_image, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
             morphologyEx(otsu_thresh_image,otsu_thresh_image,MORPH_OPEN,getStructuringElement(MORPH_ELLIPSE,Size(3,3)),
                          Point(-1,-1),1); // 3
-            cout << "DEBUG" << endl;
+            //cout << "DEBUG" << endl;
         }
         else{
             otsu_thresh_h = cv::threshold(img_channels[0], otsu_thresh_image, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
 
-        }
+        }*/
+        otsu_thresh_h = cv::threshold(img_channels[0], otsu_thresh_image, 0, 180, cv::THRESH_BINARY | cv::THRESH_OTSU);
 
         morphologyEx(otsu_thresh_image,otsu_thresh_image,MORPH_CLOSE,getStructuringElement(MORPH_ELLIPSE,Size(3, 3)),
                      Point(-1, -1),1); // 1
         // opening: brake narrow connection between objects
         morphologyEx(otsu_thresh_image,otsu_thresh_image,MORPH_OPEN,getStructuringElement(MORPH_ELLIPSE,Size(3,3)),
                      Point(-1,-1),3); // 3
-        double TL = otsu_thresh_h*nsv;
+        double TL = otsu_thresh_h;
         double TH = 2*TL;
         Canny(otsu_thresh_image, edged, TL, TH); // blurred
-        Size newSize(100, 100);  // Width and height
+        Size newSize(400, 400);  // Width and height
 
         // Resize the image
         Mat resizedCanny;
@@ -698,81 +1007,52 @@ void classify(const Mat& img, std::vector<Mat>& neighborhoods, std::vector<Mat>&
         vector<vector<Point>> contours;
         findContours(edged, contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
         cout << "---------" << endl;
-        //cout << contours.size() << endl;
-        int a = abs(sh[0] - wsh[0]);
-        int b = abs(ss[0] - wss[0]);
-        int c = abs(sv[0] - wsv[0]);
-        double STDdistance = sqrt(a * a + b * b + c * c);
+        // Draw a marker at the center of the image for visualization
+        drawMarker(image, centers[i], Scalar(255, 255, 255), MARKER_CROSS, 7, 1);
+
         for (auto &contour : contours) {
-            if (isCircular(contour, img_channels[0].size())) {
+
+            if (isCircular(contour, centers[i])) {
                 cv::Point2f center;
                 float radius;
                 cv::minEnclosingCircle(contour, center, radius);
-                circle(image, center, radius, Scalar(203, 192, 255), 1, LINE_AA);
+                circle(image, center, radius, Scalar(255, 0, 0), 2, LINE_AA);
+                circle(image, center, 1.5, Scalar(0, 255, 255), -1, LINE_AA);
+
                 // Accept the contour as a ball
                 drawContours(image, vector<vector<Point>>{contour}, -1, Scalar(0, 255, 0), 0.2);
             } else {
                 // Reject the contour as a false positive
                 drawContours(image, vector<vector<Point>>{contour}, -1, Scalar(0, 0, 255), 0.2);
             }
-            Size newSize(100, 100);  // Width and height
+
 
 
         }
         // Resize the image
         Mat resizedImage;
-        resize(circles_img[i], resizedImage, newSize);
-        //imshow("cannyImg", resizedCanny);
+        resize(image, resizedImage, newSize);
+        imshow("cannyImg", resizedCanny);
 
-        //imshow("True_Positives", resizedImage);
-        //waitKey(0);
+        imshow("True_Positives", resizedImage);
+        waitKey(0);
     }
 
 }
 
-void balls_neighbourhood(const Mat& img, const std::vector<Vec3f>& circles, std::vector<Mat>& neighborhoods, std::vector<Mat>& circles_img) {
+void balls_neighbourhood(const Mat& img, const std::vector<Vec3f>& circles, std::vector<Mat>& circles_images,std::vector<cv::Point2f>& centers) {
     double x, y;
     double radius;
-    Rect window;
     Rect ball;
-    namedWindow("Circles");
     for(int i = 0; i < circles.size(); i++)
     {
         x = cvRound(circles[i][0]);
         y = cvRound(circles[i][1]);
-        radius = cvRound(circles[i][2]);
-        int window_dim = 4;
+        radius = 7; //cvRound(circles[i][2]);
 
-        // Define the window size
-        window.height = radius * 2 *window_dim;
-        window.width = radius * 2 *window_dim;
-
-        // Calculate the top-left corner of the window
-        window.x = x - window.width/2;
-        window.y = y - window.height/2;
-
-        // Adjust window dimensions and position to ensure it stays within image bounds
-        if (window.x < 0) {
-            window.width += window.x;
-            window.x = 0;
-        }
-        if (window.y < 0) {
-            window.height += window.y;
-            window.y = 0;
-        }
-        if (window.x + window.width > img.cols) {
-            window.width = img.cols - window.x;
-        }
-        if (window.y + window.height > img.rows) {
-            window.height = img.rows - window.y;
-        }
-        Mat neighborhood = img(window).clone(); // Clone the region to store in the vector
-        Point center(cvRound(window.width/2), cvRound(window.height/2));
-        circle(neighborhood,center,radius+1,Scalar(0, 0, 0),-1, LINE_AA);
-        neighborhoods.push_back(neighborhood); // Store the region of interest in the vector
         //imshow("FALSE POSITIVE",neighborhood);
         //waitKey(0);
-        double ball_dim = 2.5;
+        double ball_dim = 3;
 
         // Define the window size
         ball.height = radius * 2 *ball_dim;
@@ -798,7 +1078,14 @@ void balls_neighbourhood(const Mat& img, const std::vector<Vec3f>& circles, std:
         if (ball.y + ball.height > img.rows) {
             ball.height = img.rows - ball.y;
         }
-        circles_img.push_back(img(ball)); // Store the region of interest in the vector
+        Mat image = img(ball).clone();
+        circles_images.push_back(image); // Store the region of interest in the vector
+        Point2f c (ball.width/2,ball.height/2);
+        centers.push_back(c);
+        // Draw a marker at the center of the image for visualization
+        //drawMarker(image, c, Scalar(255, 255, 255), MARKER_CROSS, 7, 1);
+        //imshow("Yo",image);
+        //waitKey();
     }
 }
 
