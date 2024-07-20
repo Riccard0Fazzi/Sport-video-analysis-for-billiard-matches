@@ -902,6 +902,7 @@ void discardFalsePositives(const Mat& img,std::vector<cv::Point2f>& centers,std:
         if((one_green_detected == false && one_red_detected == true) || (one_green_detected == false && one_red_detected == false) ){
             // REMOVE FROM BALLS
             balls.erase(balls.begin() + i);
+            centers.erase(centers.begin() + i);
             // MAINTAIN TOTAL ORDER IN BALLS
             i--;
         }
