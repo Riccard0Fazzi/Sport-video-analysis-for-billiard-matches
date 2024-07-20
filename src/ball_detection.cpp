@@ -26,16 +26,16 @@ std::vector<billiardBall> ball_detection(const cv::Mat& inputImage)
     std::vector<cv::Point2f> centers_window;
     balls_neighbourhood(img,circles, circles_images, centers_window);
     // Draw the detected circles on the image
-	//Mat circles_on_field_to_print;
-    //drawCircles(img,circles_on_field_to_print,circles);
+	Mat circles_on_field_to_print;
+    drawCircles(img,circles_on_field_to_print,circles);
  	std::vector<billiardBall> balls; // vector of object balls
     for(int i =0;i<circles.size();i++){
         balls.emplace_back(circles[i][0],circles[i][1],circles[i][2],-1,circles_images[i]); // -1 NOT ASSIGNED YET
     }
     // REMOVE FALSE POSITIVES
     discardFalsePositives(img,centers_window,balls);
-    //imshow("Circles",circles_img);
-    //waitKey(0);
+    imshow("Circles",circles_on_field_to_print);
+    waitKey(0);
 	//destroyAllWindows();
     return balls;
 }
@@ -864,6 +864,7 @@ void discardFalsePositives(const Mat& img,std::vector<cv::Point2f>& centers,std:
                      Point(-1,-1),3); // 3
         double TL = otsu_thresh_h;
         double TH = 2*TL;
+
         Canny(otsu_thresh_image, edged, TL, TH); // blurred
         Size newSize(400, 400);  // Width and height
 
@@ -922,14 +923,23 @@ void discardFalsePositives(const Mat& img,std::vector<cv::Point2f>& centers,std:
 
         imshow("GREEN -> True_Positives", resizedImage);
         waitKey(0);
+
     }
 
 }
 
-void balls_neighbourhood(const Mat& img, const std::vector<Vec3f>& circles, std::vector<Mat>& circles_images,std::vector<cv::Point2f>& centers) {
+void balls_neighbourhood(const Mat& src, const std::vector<Vec3f>& circles, std::vector<Mat>& circles_images,std::vector<cv::Point2f>& centers) {
     double x, y;
     double radius;
     Rect ball;
+    Mat img = src.clone();
+    // Define the size of the border to be added (e.g., 10 pixels on each side)
+    Vec3b most_common_color;
+    mostCommonColor(img,most_common_color);
+    int borderSize = 100;
+
+    // Create a new image with added borders
+    copyMakeBorder(img, img, borderSize, borderSize, borderSize, borderSize, BORDER_CONSTANT, Scalar(most_common_color[0], most_common_color[1], most_common_color[2]));
 
     // COMPUTE MAX RADIUS FOR THAT IMAGE
     double max_radius = 0;
@@ -941,8 +951,8 @@ void balls_neighbourhood(const Mat& img, const std::vector<Vec3f>& circles, std:
 
     for(int i = 0; i < circles.size(); i++)
     {
-        x = cvRound(circles[i][0]);
-        y = cvRound(circles[i][1]);
+        x = cvRound(circles[i][0])+borderSize;
+        y = cvRound(circles[i][1])+borderSize;
         radius = cvRound(max_radius); //cvRound(circles[i][2]);
 
         //imshow("FALSE POSITIVE",neighborhood);
@@ -957,6 +967,8 @@ void balls_neighbourhood(const Mat& img, const std::vector<Vec3f>& circles, std:
         // Calculate the top-left corner of the window
         ball.x = x - ball.width/2;
         ball.y = y - ball.height/2;
+
+        /*
 
         // BORDER HANDLING
 
@@ -1001,7 +1013,33 @@ void balls_neighbourhood(const Mat& img, const std::vector<Vec3f>& circles, std:
         if(ball.y<0&&ball.x >0 &&ball.x+ball.width <= img.cols ){
             ball.height = ball.height + ball.y;
             ball.y = 0;
+        }*/
+        /*
+        cout << "----------" << endl;
+        // Adjust the window to ensure it stays within image bounds
+        if (ball.x < 0) {
+            ball.width += ball.x; // Reduce width
+            ball.width = ball.width/2;
+            ball.x = 0; // Set x to 0
         }
+        if (ball.y < 0) {
+            ball.height += ball.y; // Reduce height
+            ball.height = ball.height/2;
+            ball.y = 0; // Set y to 0
+        }
+        if (ball.x + ball.width > img.cols) {
+            ball.width = (img.cols - ball.x)/2; // Reduce width
+            ball.x = ball.x + ball.width;
+        }
+        if (ball.y + ball.height > img.rows) {
+            cout << "DEBUG" << endl;
+            ball.height = (img.rows - ball.y)/2; // Reduce height
+            ball.y = ball.y + ball.height;
+        }
+
+        // Ensure the dimensions are non-negative
+        ball.width = std::max(0, ball.width);
+        ball.height = std::max(0, ball.height);*/
 
 
 
@@ -1033,8 +1071,6 @@ void balls_neighbourhood(const Mat& img, const std::vector<Vec3f>& circles, std:
             ball.height = img.rows - ball.y;
         }*/
         Mat image = img(ball).clone();
-        imshow("DEBUG",image);
-        waitKey();
 
         circles_images.push_back(image); // Store the region of interest in the vector
         Point2f c (ball.width/2,ball.height/2);
