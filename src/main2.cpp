@@ -70,10 +70,11 @@ int main(int argc, char** argv) {
 		// PARAM: Mat object containing the cropped table
 		balls =	ball_detection(cropped_field);
 		//classify(balls,cropped_field);
-		/*namedWindow("Balls");
+        /*
+		namedWindow("Balls");
 		for(int i = 0; i < balls.size();i++)
 		{
-			imshow("Balls",balls[i].image);
+			imshow("Balls",balls[i].ballImage);
 			waitKey(0);
 		}*/
 		
@@ -88,14 +89,12 @@ int main(int argc, char** argv) {
 
 
 		video_frames.clear(); // vector that stores each video frame
-		balls_coordinates.clear();
+		//balls_coordinates.clear();
 		frame.release();					   // temporary object to store each single frame
-		H.release();
+		//H.release();
 		cropped_field.release();			   // cropped image to perform ball detection
 		field_points.clear();		   // vector to store the points of the contour of the field
 		balls.clear();   // vector to store object of balls
-		balls_coordinates.clear();
-		H.release();
 		cv::destroyAllWindows();
 		std::cout << "+------------------------------------[NEXT]--------------------------------------------+" << std::endl;
 	}

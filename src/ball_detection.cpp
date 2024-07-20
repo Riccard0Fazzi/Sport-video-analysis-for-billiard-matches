@@ -3,8 +3,8 @@ using namespace cv;
 using namespace std;
 
 // Structure used to store balls names and colors
-billiardBall::billiardBall(int x, int y, int width, int height, cv::Mat& image)
-    : x(x), y(y), width(width), height(height), image(image)
+billiardBall::billiardBall(int x, int y, double true_radius, int type, cv::Mat& ballImage)
+    : x(x), y(y), true_radius(true_radius),type(type), ballImage(ballImage)
 {
     // Optionally, you can add additional initialization logic here if needed
 }
@@ -23,17 +23,17 @@ std::vector<billiardBall> ball_detection(const cv::Mat& inputImage)
 	std::vector<Vec3f> circles;
     ballDetection(img,circles);
     std::vector<Mat> circles_images;
-    std::vector<cv::Point2f> centers;
-    balls_neighbourhood(img,circles, circles_images, centers);
-    //printCircles(img,circles,circle_size,circles_images);    
-    // Draw the detected circles    
-	Mat circles_img;
-    drawCircles(img,circles_img,circles); 
+    std::vector<cv::Point2f> centers_window;
+    balls_neighbourhood(img,circles, circles_images, centers_window);
+    // Draw the detected circles on the image
+	//Mat circles_on_field_to_print;
+    //drawCircles(img,circles_on_field_to_print,circles);
  	std::vector<billiardBall> balls; // vector of object balls
-	for(int i = 0; i < circles_images.size(); i++)
-    {       balls.emplace_back(circles[i][0],circles[i][1],circles[i][2],10,circles_images[i]);       
+    for(int i =0;i<circles.size();i++){
+        balls.emplace_back(circles[i][0],circles[i][1],circles[i][2],-1,circles_images[i]); // -1 NOT ASSIGNED YET
     }
-    discardFalsePositives(img, circles_images,centers);
+    // REMOVE FALSE POSITIVES
+    discardFalsePositives(img,centers_window,balls);
     //imshow("Circles",circles_img);
     //waitKey(0);
 	//destroyAllWindows();
@@ -766,7 +766,7 @@ bool isBall(vector<Point> contour, Point2f c) {
     return false;
 }
 
-void discardFalsePositives(const Mat& img, std::vector<Mat>& circles_img,std::vector<cv::Point2f>& centers) {
+void discardFalsePositives(const Mat& img,std::vector<cv::Point2f>& centers,std::vector<billiardBall>& balls) {
 
     // GLOBAL EVALUATION
 
@@ -792,13 +792,13 @@ void discardFalsePositives(const Mat& img, std::vector<Mat>& circles_img,std::ve
 
     // IMAGE BALL EVALUATION
 
-    for(size_t i = 0; i < circles_img.size(); ++i){
+    for(size_t i = 0; i < balls.size(); i++){
 
 
         // Mean and Standard deviation of the Ball
 
         Mat hsv_ball;
-        cvtColor(circles_img[i], hsv_ball, COLOR_BGR2HSV_FULL);
+        cvtColor(balls[i].ballImage, hsv_ball, COLOR_BGR2HSV_FULL);
         split(hsv_ball, img_channels);
 
 
@@ -816,7 +816,7 @@ void discardFalsePositives(const Mat& img, std::vector<Mat>& circles_img,std::ve
 
         // FAZZI's method ------------------
 
-        Mat image = circles_img[i].clone();
+        Mat image = balls[i].ballImage.clone();
         Mat gray, blurred, edged;
 
         //cvtColor(image,image,COLOR_BGR2Lab);
@@ -869,10 +869,15 @@ void discardFalsePositives(const Mat& img, std::vector<Mat>& circles_img,std::ve
         cout << "---------" << endl;
         // Draw a marker at the center of the image for visualization
         drawMarker(image, centers[i], Scalar(255, 255, 255), MARKER_CROSS, 7, 1);
+        bool one_green_detected = false;
+        bool one_red_detected = false;
 
         for (auto &contour : contours) {
 
             if (isBall(contour, centers[i])) {
+
+                // one green was detected
+                one_green_detected = true;
                 cv::Point2f center;
                 float radius;
                 cv::minEnclosingCircle(contour, center, radius);
@@ -881,14 +886,26 @@ void discardFalsePositives(const Mat& img, std::vector<Mat>& circles_img,std::ve
 
                 // Accept the contour as a ball
                 drawContours(image, vector<vector<Point>>{contour}, -1, Scalar(0, 255, 0), 0.2);
+
+                // UPDATE OF BOUNDING BOX
+
             } else {
+                // one red detected condition
+                one_red_detected = true;
                 // Reject the contour as a false positive
                 drawContours(image, vector<vector<Point>>{contour}, -1, Scalar(0, 0, 255), 0.2);
             }
 
-
-
         }
+        // REMOVAL CONDITION
+        // IF NO GREEN DETECTED AND AT LEAST ONE RED DETECTED OR NOTHING DETECTED
+        if((one_green_detected == false && one_red_detected == true) || (one_green_detected == false && one_red_detected == false) ){
+            // REMOVE FROM BALLS
+            balls.erase(balls.begin() + i);
+            // MAINTAIN TOTAL ORDER IN BALLS
+            i--;
+        }
+
         // Resize the image
         Mat resizedImage;
         resize(image, resizedImage, newSize);
