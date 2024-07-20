@@ -10,7 +10,10 @@
     <option name="reloaded" value="true" />
   </component>
   <component name="CMakeRunConfigurationManager">
-    <generated />
+    <generated>
+      <config projectName="Sport-video-analysis-for-billiard-matches" targetName="Sport-video-analysis-for-billiard-matches" />
+      <config projectName="Sport-video-analysis-for-billiard-matches" targetName="BiliardVideoAnalysis" />
+    </generated>
   </component>
   <component name="CMakeSettings">
     <configurations>
@@ -18,14 +21,32 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="948c52e5-9aa5-406e-97f5-4634cd50793c" name="Changes" comment="Improvements on ball_detection.cpp&#10;Better table cloth segmentation&#10;Shadows attenuation&#10;Introduced the binary thresholding to the table mask&#10;Better tuning of HoughCircle">
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_04_07_24,_10_46_[Changes]/shelved.patch" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_04_07_24__10_46__Changes_.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_30_06_24,_19_16_[Changes]/shelved.patch" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_30_06_24__19_16__Changes_.xml" beforeDir="false" />
+    <list default="true" id="948c52e5-9aa5-406e-97f5-4634cd50793c" name="Changes" comment="Improving CLASSIFICATION - FALSE POSITIVE DISCARD">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/.cmake/api/v1/reply/cache-v2-1c4943a784682698191a.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/.cmake/api/v1/reply/toolchains-v1-d76c0cf0d985fd04b502.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/.ninja_deps" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/.ninja_deps" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/.ninja_log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/.ninja_log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/BiliardVideoAnalysis" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/BiliardVideoAnalysis.cbp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeCache.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeCache.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.27.8/CMakeCCompiler.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.27.8/CMakeCCompiler.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.27.8/CMakeCXXCompiler.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.27.8/CMakeCXXCompiler.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.27.8/CMakeDetermineCompilerABI_C.bin" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.27.8/CMakeDetermineCompilerABI_C.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.27.8/CMakeDetermineCompilerABI_CXX.bin" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.27.8/CMakeDetermineCompilerABI_CXX.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.27.8/CMakeSystem.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.27.8/CMakeSystem.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.27.8/CompilerIdC/CMakeCCompilerId.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.27.8/CompilerIdC/CMakeCCompilerId.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.27.8/CompilerIdCXX/CMakeCXXCompilerId.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.27.8/CompilerIdCXX/CMakeCXXCompilerId.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CMakeConfigureLog.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CMakeConfigureLog.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/TargetDirectories.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/TargetDirectories.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-Debug-log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-Debug-log.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/field_detection.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/field_detection.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/rules.ninja" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/rules.ninja" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/Makefile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/build.ninja" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/build.ninja" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/cmake_install.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/cmake_install.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CLMAC1.cpp" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -64,6 +85,7 @@
   &quot;keyToString&quot;: {
     &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
     &quot;CMake Application.BiliardVideoAnalysis.executor&quot;: &quot;Run&quot;,
+    &quot;CMake Application.Sport-video-analysis-for-billiard-matches.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
@@ -81,7 +103,12 @@
   }
 }</component>
   <component name="RunManager">
-    <configuration name="BiliardVideoAnalysis" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="$PROJECT_DIR$/data/Field_Masks $USER_HOME$/Documents/UNIPD/CSE/First_Year/Computer_Vision/Project/Detecting_Circles/results &quot;*.png&quot;" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Project" TARGET_NAME="BiliardVideoAnalysis" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="Project" RUN_TARGET_NAME="BiliardVideoAnalysis">
+    <configuration name="Sport-video-analysis-for-billiard-matches" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="$PROJECT_DIR$/data/all_videos" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Sport-video-analysis-for-billiard-matches" TARGET_NAME="Sport-video-analysis-for-billiard-matches" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="Sport-video-analysis-for-billiard-matches" RUN_TARGET_NAME="Sport-video-analysis-for-billiard-matches">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Sport-video-analysis-for-billiard-matches" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="$PROJECT_DIR$/data/data/all_videos" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="BiliardVideoAnalysis" RUN_TARGET_NAME="BiliardVideoAnalysis" EXPLICIT_BUILD_TARGET_NAME="all">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -117,6 +144,14 @@
       <workItem from="1720291872150" duration="13399000" />
       <workItem from="1720876680351" duration="952000" />
       <workItem from="1720887754813" duration="604000" />
+      <workItem from="1721313099937" duration="9748000" />
+      <workItem from="1721333812015" duration="11123000" />
+      <workItem from="1721352213430" duration="7099000" />
+      <workItem from="1721387905866" duration="4691000" />
+      <workItem from="1721394042483" duration="13334000" />
+      <workItem from="1721409405495" duration="35562000" />
+      <workItem from="1721462898790" duration="3133000" />
+      <workItem from="1721468018184" duration="5906000" />
     </task>
     <task id="LOCAL-00001" summary="Changed project name and executables on CMake list">
       <option name="closed" value="true" />
@@ -182,7 +217,119 @@
       <option name="project" value="LOCAL" />
       <updated>1720085334595</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Improving field detection and implementation of homography">
+      <option name="closed" value="true" />
+      <created>1721350284001</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1721350284001</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Improving CLASSIFICATION - FALSE POSITIVE DISCARD">
+      <option name="closed" value="true" />
+      <created>1721359318742</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1721359318743</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Improving CLASSIFICATION - FALSE POSITIVE DISCARD">
+      <option name="closed" value="true" />
+      <created>1721396109442</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1721396109442</updated>
+    </task>
+    <task id="LOCAL-00012" summary="Improving CLASSIFICATION - FALSE POSITIVE DISCARD">
+      <option name="closed" value="true" />
+      <created>1721396131585</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1721396131585</updated>
+    </task>
+    <task id="LOCAL-00013" summary="Improving CLASSIFICATION - FALSE POSITIVE DISCARD">
+      <option name="closed" value="true" />
+      <created>1721402588069</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1721402588069</updated>
+    </task>
+    <task id="LOCAL-00014" summary="Improving CLASSIFICATION - FALSE POSITIVE DISCARD">
+      <option name="closed" value="true" />
+      <created>1721402636855</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1721402636855</updated>
+    </task>
+    <task id="LOCAL-00015" summary="Improving CLASSIFICATION - FALSE POSITIVE DISCARD">
+      <option name="closed" value="true" />
+      <created>1721404259005</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1721404259005</updated>
+    </task>
+    <task id="LOCAL-00016" summary="Improving CLASSIFICATION - FALSE POSITIVE DISCARD">
+      <option name="closed" value="true" />
+      <created>1721407576721</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1721407576721</updated>
+    </task>
+    <task id="LOCAL-00017" summary="Improving CLASSIFICATION - FALSE POSITIVE DISCARD">
+      <option name="closed" value="true" />
+      <created>1721462958235</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1721462958235</updated>
+    </task>
+    <task id="LOCAL-00018" summary="Improving CLASSIFICATION - FALSE POSITIVE DISCARD">
+      <option name="closed" value="true" />
+      <created>1721465027344</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1721465027344</updated>
+    </task>
+    <task id="LOCAL-00019" summary="Improving CLASSIFICATION - FALSE POSITIVE DISCARD">
+      <option name="closed" value="true" />
+      <created>1721465560607</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1721465560607</updated>
+    </task>
+    <task id="LOCAL-00020" summary="Improving CLASSIFICATION - FALSE POSITIVE DISCARD">
+      <option name="closed" value="true" />
+      <created>1721465933902</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1721465933902</updated>
+    </task>
+    <task id="LOCAL-00021" summary="Improving CLASSIFICATION - FALSE POSITIVE DISCARD">
+      <option name="closed" value="true" />
+      <created>1721473290190</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1721473290190</updated>
+    </task>
+    <task id="LOCAL-00022" summary="Improving CLASSIFICATION - FALSE POSITIVE DISCARD">
+      <option name="closed" value="true" />
+      <created>1721473811114</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1721473811114</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -209,6 +356,8 @@
     <MESSAGE value="Changed project name and executables on CMake list" />
     <MESSAGE value="New file ballDetector" />
     <MESSAGE value="Improvements on ball_detection.cpp&#10;Better table cloth segmentation&#10;Shadows attenuation&#10;Introduced the binary thresholding to the table mask&#10;Better tuning of HoughCircle" />
-    <option name="LAST_COMMIT_MESSAGE" value="Improvements on ball_detection.cpp&#10;Better table cloth segmentation&#10;Shadows attenuation&#10;Introduced the binary thresholding to the table mask&#10;Better tuning of HoughCircle" />
+    <MESSAGE value="Improving field detection and implementation of homography" />
+    <MESSAGE value="Improving CLASSIFICATION - FALSE POSITIVE DISCARD" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improving CLASSIFICATION - FALSE POSITIVE DISCARD" />
   </component>
 </project>
