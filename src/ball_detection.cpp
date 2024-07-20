@@ -743,74 +743,21 @@ bool isCircular(vector<Point> contour, Point2f c) {
         }
     }
 
-
-
-    /*
-
-    // ALMOST CLOSED CIRCLES CONDITION
-    if(isContourConvex(approx)==false){
-
-        // IF IT'S IN THE CENTER AND NOT TOO BIG
-        if((abs(center.x- size.width/2)<3)&&(abs(center.y- size.height/2)<5)&&(abs(radius- size.width/2)>10)){
-            //cout << "OUT OF CENTER" << endl;
-            //cout << abs(center.x- size.width/2) << " " << abs(center.y- size.height/2) << endl;
-            return true;
-        }
-        //cout << "DEBUG" << endl;
-        //cout << abs(center.x- size.width/2) << " " << abs(center.y- size.height/2) << endl;
-
-        return false;
-    }
-    // CLOSED CIRCLES CONDITION
-    if((abs(center.x- size.width/2)>3)&&(abs(center.y- size.height/2)>5)&&(abs(radius- size.width/2)>10)){
-
-        //cout << abs(center.x- size.width/2) << " " << abs(center.y- size.height/2) << endl;
-        return false;
-    }*/
-
-
-        /*
-    // IF IT'S IN THE CENTER AND NOT TOO BIG
-    if(min_distance > 10 || (abs(radius- size.width/2)>25.1)){
-        //cout << "OUT OF CENTER" << endl;
-        //cout << abs(center.x- size.width/2) << " " << abs(center.y- size.height/2) << endl;
-        return false;
-    }
-
-
-    return true;*/
-
-    /*
-    // IT'S CENTERED OR CLOSE TO THE CENTER
-    if((min_distance < 4 ||(abs(center.x- c.x)<5)&&(abs(center.y- c.y)<5))) {
-        // IS IT TOO BIG OR NOT CONVEX ???
-        if(area > 415 || isContourConvex(approx)==false ){
-            cout << "FIRST" << endl;
-            cout << "area " << area << endl;
-            return false;
-        }
-        cout << "AREA " << endl;
-        cout << area << endl;
-
-
-        return true;
-    }
-    cout << "LAST" << endl;
-    return false;*/
-
+    // TOO BIG CONDITION
+    // area is not a good index, really big contours have still small areas somehow
 
     // IS IT CENTERED ?
     if(abs(center.x- c.x)<5&&abs(center.y- c.y)<5) {
         cout << "AREA " << endl;
         cout << area << endl;
-
-
         return true;
     }
+    // IF NOT CENTERED BUT CLOSEST POINT TO THE CENTER IS CLOSE AND CONVEX CONTOUR
     if(min_distance<=3 && isContourConvex(approx)){
         return true;
     }
-    // Check if the point is inside the contour
+
+    // NOT UPPER PROPERTIES BUT CENTER IS INSIDE CONTOUR (SET AS INITIAL CONDITION ?)
     if(pointPolygonTest(contour, c, false)>0){
         return true;
     }
@@ -818,92 +765,6 @@ bool isCircular(vector<Point> contour, Point2f c) {
     cout << min_distance << endl;
     cout << "NOT CLOSE" << endl;
     return false;
-
-
-
-
-    /*
-
-    // ALMOST A CIRCLE
-    if(isContourConvex(approx)==false){
-        if(radius > 2.5 && radius < 13) {
-            if((abs(center.x- size.width/2)<3)&&(abs(center.y- size.height/2)<5))
-            cout << abs(center.x- size.width/2) << " " << abs(center.y- size.height/2) << endl;
-            return true;
-        }
-    }
-
-    // CIRCLE
-    if(radius > 2.5 && radius < 13) {
-        cout << abs(center.x- size.width/2) << " " << abs(center.y- size.height/2) << endl;
-        return true;
-    }
-    return false;*/
-
-    /*
-    if(radius > 2.5 && radius < 13){
-        // is it not too small ?
-        if (contour.size() < 8 || contour.size() > 20) {
-            return false;
-        }
-        if((abs(center.x- size.width/2)>3)&&(abs(center.y- size.height/2)>5)){
-            //cout << "OUT OF CENTER" << endl;
-            //cout << abs(center.x- size.width/2) << " " << abs(center.y- size.height/2) << endl;
-            return false;
-        }
-        return true;
-    }
-    return false;*/
-
-
-    /*
-    // is it convex ?
-
-    if(isContourConvex(approx)){
-
-        // is it not too small ?
-        if (contour.size() < 8) {
-            return false;
-        }
-
-        // is it in the middle of the window ????
-        double x_sum = 0.0;
-        double y_sum = 0.0;
-        std::vector<Point> convexHull;
-        cv::convexHull(contour, convexHull);
-
-        for (const auto& point : convexHull) {
-            x_sum += point.x;
-            y_sum += point.y;
-        }
-
-        double num_points = static_cast<double>(convexHull.size());
-        Point2d centroid = { x_sum / num_points, y_sum / num_points };
-        if((abs(centroid.x- size.width/2)>3)&&(abs(centroid.y- size.height/2)>5)){
-            //cout << "OUT OF CENTER" << endl;
-            return false;
-        }
-
-        return true;
-    }
-    return false;*/
-
-    /*
-    if(distance<3){
-        if(area>4.1){
-            if(circularity<0.02){
-                return false;
-            }
-            cout << area << endl;
-            return true;
-        }
-        else{
-
-            return false;
-        }
-    }
-	return false; //circularity > nsh*nsv;  // threshold for circularity
-     */
 }
 
 void classify(const Mat& img, std::vector<Mat>& circles_img,std::vector<cv::Point2f>& centers) {
@@ -1044,15 +905,24 @@ void balls_neighbourhood(const Mat& img, const std::vector<Vec3f>& circles, std:
     double x, y;
     double radius;
     Rect ball;
+
+    // COMPUTE MAX RADIUS FOR THAT IMAGE
+    double max_radius = 0;
+    for(int i = 0; i < circles.size(); i++){
+        if (circles[i][2] > max_radius){
+            max_radius = circles[i][2];
+        }
+    }
+
     for(int i = 0; i < circles.size(); i++)
     {
         x = cvRound(circles[i][0]);
         y = cvRound(circles[i][1]);
-        radius = 7; //cvRound(circles[i][2]);
+        radius = cvRound(max_radius); //cvRound(circles[i][2]);
 
         //imshow("FALSE POSITIVE",neighborhood);
         //waitKey(0);
-        double ball_dim = 3;
+        double ball_dim = 1.5;
 
         // Define the window size
         ball.height = radius * 2 *ball_dim;
