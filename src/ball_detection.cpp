@@ -34,7 +34,7 @@ std::vector<billiardBall> ball_detection(const cv::Mat& inputImage)
 	for(int i = 0; i < circles_images.size(); i++)
     {       balls.emplace_back(circles[i][0],circles[i][1],circles[i][2],10,circles_images[i]);       
     }
-    classify(img, circles_images,centers);
+    discardFalsePositives(img, circles_images,centers);
     //imshow("Circles",circles_img);
     //waitKey(0);
 	//destroyAllWindows();
@@ -712,7 +712,7 @@ double distance(const Point& p1, const Point& p2) {
     return (abs(p1.x - p2.x)  + abs(p1.y - p2.y));
 }
 
-bool isCircular(vector<Point> contour, Point2f c) {
+bool isBall(vector<Point> contour, Point2f c) {
     double area = contourArea(contour);
     double perimeter = arcLength(contour, true);
     double circularity = 4 * CV_PI * (area / (perimeter * perimeter));
@@ -767,7 +767,7 @@ bool isCircular(vector<Point> contour, Point2f c) {
     return false;
 }
 
-void classify(const Mat& img, std::vector<Mat>& circles_img,std::vector<cv::Point2f>& centers) {
+void discardFalsePositives(const Mat& img, std::vector<Mat>& circles_img,std::vector<cv::Point2f>& centers) {
 
     // GLOBAL EVALUATION
 
@@ -873,7 +873,7 @@ void classify(const Mat& img, std::vector<Mat>& circles_img,std::vector<cv::Poin
 
         for (auto &contour : contours) {
 
-            if (isCircular(contour, centers[i])) {
+            if (isBall(contour, centers[i])) {
                 cv::Point2f center;
                 float radius;
                 cv::minEnclosingCircle(contour, center, radius);

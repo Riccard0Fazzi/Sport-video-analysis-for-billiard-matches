@@ -22,7 +22,7 @@ struct billiardBall {
 void balls_neighbourhood(const cv::Mat& img, const std::vector<cv::Vec3f>& circles, std::vector<cv::Mat>& circles_images,std::vector<cv::Point2f>& centers);
 
 
-void classify(const cv::Mat& img,  std::vector<cv::Mat>& circles_img,std::vector<cv::Point2f>& centers);
+void discardFalsePositives(const cv::Mat& img,  std::vector<cv::Mat>& circles_img,std::vector<cv::Point2f>& centers);
 
 // Structure used to contain each billiard sets of balls of different colors
 struct billiardSet {
