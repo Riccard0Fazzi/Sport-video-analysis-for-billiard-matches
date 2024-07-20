@@ -1007,7 +1007,7 @@ void balls_neighbourhood(const Mat& img, const std::vector<Vec3f>& circles, std:
 
 
         /*
-        // Adjust window dimensions and position to ensure it stays within image bounds
+        // Adjust window dimensions and position to ensure it stays within image boundsh
         if (ball.x < 0) {
             cout << " x < 0 "<< endl;
             //ball.width += ball.x;
