@@ -97,7 +97,7 @@ int main(int argc, char** argv) {
 		balls_coordinates.clear();
 		H.release();
 		cv::destroyAllWindows();
-		std::cout << "+--------------------------------------------------------------------------------+" << std::endl;
+		std::cout << "+------------------------------------[NEXT]--------------------------------------------+" << std::endl;
 	}
 		return 0;
 }

@@ -1,4 +1,3 @@
-// Created by Tommaso Tubaldo on 06/06/24 - Hours: 70
 #include "ball_detection.hpp"
 using namespace cv;
 using namespace std;
@@ -861,8 +860,8 @@ void discardFalsePositives(const Mat& img, std::vector<Mat>& circles_img,std::ve
         Size newSize(400, 400);  // Width and height
 
         // Resize the image
-        Mat resizedCanny;
-        resize(otsu_thresh_image, resizedCanny, newSize); // edged
+        Mat resizedMask;
+        resize(otsu_thresh_image, resizedMask, newSize); // edged
 
 
         vector<vector<Point>> contours;
@@ -893,9 +892,9 @@ void discardFalsePositives(const Mat& img, std::vector<Mat>& circles_img,std::ve
         // Resize the image
         Mat resizedImage;
         resize(image, resizedImage, newSize);
-        imshow("cannyImg", resizedCanny);
+        imshow("MASK", resizedMask);
 
-        imshow("True_Positives", resizedImage);
+        imshow("GREEN -> True_Positives", resizedImage);
         waitKey(0);
     }
 
