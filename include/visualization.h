@@ -1,8 +1,9 @@
-#ifndef VISUALIZATION
-#define VISUALIZATION
+#ifndef BILIARDVIDEOANALYSIS_VISUALIZATION_H
+#define BILIARDVIDEOANALYSIS_VISUALIZATION_H
 
 #include <opencv2/opencv.hpp>
 #include <iostream>
+#include "ball_detection.hpp"
 
 struct colors{
     cv::Scalar white = cv::Scalar (255,255,255);
@@ -13,4 +14,4 @@ struct colors{
 
 void drawBallsOnTopView(const std::vector<billiardBall>& balls, cv::Mat& top_view);
 
-#endif // VISUALIZATION
+#endif //BILIARDVIDEOANALYSIS_VISUALIZATION_H
