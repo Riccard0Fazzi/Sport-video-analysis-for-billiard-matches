@@ -11,10 +11,10 @@
 struct billiardBall {
 	int x,y;
 	double true_radius;
-    int type;
+    int id;
 	cv::Mat ballImage;
 
-	billiardBall(int x, int y, double true_radius,  int type, cv::Mat& ballImage);
+	billiardBall(int x, int y, double true_radius,  int id, cv::Mat& ballImage);
     // Custom destructor to free the allocated resource
     ~billiardBall() {
         ballImage.release();

@@ -3,8 +3,8 @@ using namespace cv;
 using namespace std;
 
 // Structure used to store balls names and colors
-billiardBall::billiardBall(int x, int y, double true_radius, int type, cv::Mat& ballImage)
-    : x(x), y(y), true_radius(true_radius),type(type), ballImage(ballImage)
+billiardBall::billiardBall(int x, int y, double true_radius, int id, cv::Mat& ballImage)
+    : x(x), y(y), true_radius(true_radius),id(id), ballImage(ballImage)
 {
     // Optionally, you can add additional initialization logic here if needed
 }
