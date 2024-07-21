@@ -10,19 +10,21 @@
 // Structure used to store balls names and colors
 struct billiardBall {
 	int x,y;
-	int width, height;
-    int ball_category_ID;
-	cv::Mat image;
-	std::string color_name;
-    cv::Vec3b color_value;
+	double true_radius;
+    int type;
+	cv::Mat ballImage;
 
-	billiardBall(int x, int y, int width, int height, cv::Mat& image);
+	billiardBall(int x, int y, double true_radius,  int type, cv::Mat& ballImage);
+    // Custom destructor to free the allocated resource
+    ~billiardBall() {
+        ballImage.release();
+    }
 };
 
-void balls_neighbourhood(const cv::Mat& img, const std::vector<cv::Vec3f>& circles, std::vector<cv::Mat>& circles_images,std::vector<cv::Point2f>& centers);
+void balls_neighbourhood(const cv::Mat& src, const std::vector<cv::Vec3f>& circles, std::vector<cv::Mat>& circles_images,std::vector<cv::Point2f>& centers);
 
 
-void discardFalsePositives(const cv::Mat& img,  std::vector<cv::Mat>& circles_img,std::vector<cv::Point2f>& centers);
+void discardFalsePositives(const cv::Mat& img, std::vector<cv::Point2f>& centers,std::vector<billiardBall>& balls);
 
 // Structure used to contain each billiard sets of balls of different colors
 struct billiardSet {

@@ -1,0 +1,149 @@
+Index: CMakeLists.txt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>cmake_minimum_required(VERSION 2.8)\nproject(BiliardVideoAnalysis)\n\n# Link against OpenCV libraries\ntarget_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})\n\n# Specify the C++ standard\nset(CMAKE_CXX_STANDARD 11)\n\n# Find OpenCV package\nfind_package(OpenCV REQUIRED)\n\n# Source files\nset(SOURCES src/main.cpp)\n\n# Include directories\ninclude_directories(\n    ${OpenCV_INCLUDE_DIRS}\n    include  # Add your include directory where field_detection.h is located\n)\n\n# Add executable\nadd_executable(BiliardVideoAnalysis\n    src/field_detection.cpp\n\tsrc/ball_detection.cpp\n\tsrc/homography.cpp\n    src/main.cpp\n    # Include other source files if needed (ball_classification.cpp, tracking.cpp, etc.)\n)\n\n# Link OpenCV libraries\ntarget_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})\n\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt	(revision 659da0519390cd8dcffb48b7a3bdc1ba00ca5e1c)
++++ b/CMakeLists.txt	(date 1721136837635)
+@@ -1,14 +1,22 @@
+-cmake_minimum_required(VERSION 2.8)
+-project(BiliardVideoAnalysis)
++#cmake_minimum_required(VERSION 2.8)
++cmake_minimum_required(VERSION 3.27)
++project(Sport-video-analysis-for-billiard-matches)
++set(OpenCV_DIR "/opt/homebrew/Cellar/opencv/4.9.0_11.reinstall/lib/cmake/opencv4")
++set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
++set(CMAKE_INSTALL_RPATH "/opt/homebrew/opt/ffmpeg@6/lib;/opt/homebrew/Cellar/ffmpeg@6/lib")
++#
++set(CMAKE_CXX_STANDARD 17)
++## Find OpenCV
++find_package(OpenCV 4.9.0 REQUIRED)
+ 
+ # Link against OpenCV libraries
+ target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})
+ 
+ # Specify the C++ standard
+-set(CMAKE_CXX_STANDARD 11)
++#set(CMAKE_CXX_STANDARD 11)
+ 
+ # Find OpenCV package
+-find_package(OpenCV REQUIRED)
++#find_package(OpenCV REQUIRED)
+ 
+ # Source files
+ set(SOURCES src/main.cpp)
+Index: cmake-build-debug/CMakeFiles/clion-Debug-log.txt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/cmake-build-debug/CMakeFiles/clion-Debug-log.txt b/cmake-build-debug/CMakeFiles/clion-Debug-log.txt
+--- a/cmake-build-debug/CMakeFiles/clion-Debug-log.txt	(revision 659da0519390cd8dcffb48b7a3bdc1ba00ca5e1c)
++++ b/cmake-build-debug/CMakeFiles/clion-Debug-log.txt	(date 1721136666699)
+@@ -1,0 +1,4 @@
++Cannot generate into /Users/crucio/CLionProjects/Sport-video-analysis-for-billiard-matches/cmake-build-debug
++It is already used for project /Users/Administrator/CLionProjects/Sport-video-analysis-for-billiard-matches
++
++Please either delete it manually or select another generation directory
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project version=\"4\">\n  <component name=\"AutoImportSettings\">\n    <option name=\"autoReloadType\" value=\"SELECTIVE\" />\n  </component>\n  <component name=\"CMakePresetLoader\">{\n  &quot;useNewFormat&quot;: true\n}</component>\n  <component name=\"CMakeReloadState\">\n    <option name=\"reloaded\" value=\"true\" />\n  </component>\n  <component name=\"CMakeRunConfigurationManager\">\n    <generated />\n  </component>\n  <component name=\"CMakeSettings\">\n    <configurations>\n      <configuration PROFILE_NAME=\"Debug\" ENABLED=\"true\" CONFIG_NAME=\"Debug\" />\n    </configurations>\n  </component>\n  <component name=\"ChangeListManager\">\n    <list default=\"true\" id=\"948c52e5-9aa5-406e-97f5-4634cd50793c\" name=\"Changes\" comment=\"Improvements on ball_detection.cpp&#10;Better table cloth segmentation&#10;Shadows attenuation&#10;Introduced the binary thresholding to the table mask&#10;Better tuning of HoughCircle\">\n      <change beforePath=\"$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_04_07_24,_10_46_[Changes]/shelved.patch\" beforeDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_04_07_24__10_46__Changes_.xml\" beforeDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_30_06_24,_19_16_[Changes]/shelved.patch\" beforeDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_30_06_24__19_16__Changes_.xml\" beforeDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/.idea/workspace.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/workspace.xml\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-Debug-log.txt\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-Debug-log.txt\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/src/field_detection.cpp\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/src/field_detection.cpp\" afterDir=\"false\" />\n    </list>\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\n  </component>\n  <component name=\"ClangdSettings\">\n    <option name=\"formatViaClangd\" value=\"false\" />\n  </component>\n  <component name=\"ExecutionTargetManager\" SELECTED_TARGET=\"CMakeBuildProfile:Debug\" />\n  <component name=\"Git.Settings\">\n    <option name=\"PUSH_AUTO_UPDATE\" value=\"true\" />\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\n  </component>\n  <component name=\"MarkdownSettingsMigration\">\n    <option name=\"stateVersion\" value=\"1\" />\n  </component>\n  <component name=\"ProjectApplicationVersion\">\n    <option name=\"ide\" value=\"CLion\" />\n    <option name=\"majorVersion\" value=\"2023\" />\n    <option name=\"minorVersion\" value=\"3.4\" />\n  </component>\n  <component name=\"ProjectColorInfo\">{\n  &quot;associatedIndex&quot;: 5\n}</component>\n  <component name=\"ProjectId\" id=\"2ibn0zH8rHEwerDQV0ElIh77M6y\" />\n  <component name=\"ProjectLevelVcsManager\">\n    <OptionsSetting value=\"false\" id=\"Update\" />\n    <ConfirmationsSetting value=\"2\" id=\"Add\" />\n  </component>\n  <component name=\"ProjectViewState\">\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\n    <option name=\"showLibraryContents\" value=\"true\" />\n  </component>\n  <component name=\"PropertiesComponent\">{\n  &quot;keyToString&quot;: {\n    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,\n    &quot;CMake Application.BiliardVideoAnalysis.executor&quot;: &quot;Run&quot;,\n    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,\n    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,\n    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,\n    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,\n    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,\n    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,\n    &quot;git-widget-placeholder&quot;: &quot;main&quot;,\n    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,\n    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,\n    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,\n    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,\n    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,\n    &quot;settings.editor.selected.configurable&quot;: &quot;advanced.settings&quot;,\n    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;\n  }\n}</component>\n  <component name=\"RunManager\">\n    <configuration name=\"BiliardVideoAnalysis\" type=\"CMakeRunConfiguration\" factoryName=\"Application\" PROGRAM_PARAMS=\"$PROJECT_DIR$/data/Field_Masks $USER_HOME$/Documents/UNIPD/CSE/First_Year/Computer_Vision/Project/Detecting_Circles/results &quot;*.png&quot;\" REDIRECT_INPUT=\"false\" ELEVATE=\"false\" USE_EXTERNAL_CONSOLE=\"false\" EMULATE_TERMINAL=\"false\" PASS_PARENT_ENVS_2=\"true\" PROJECT_NAME=\"Project\" TARGET_NAME=\"BiliardVideoAnalysis\" CONFIG_NAME=\"Debug\" RUN_TARGET_PROJECT_NAME=\"Project\" RUN_TARGET_NAME=\"BiliardVideoAnalysis\">\n      <method v=\"2\">\n        <option name=\"com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask\" enabled=\"true\" />\n      </method>\n    </configuration>\n  </component>\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\n  <component name=\"TaskManager\">\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\n      <changelist id=\"948c52e5-9aa5-406e-97f5-4634cd50793c\" name=\"Changes\" comment=\"\" />\n      <created>1717232944332</created>\n      <option name=\"number\" value=\"Default\" />\n      <option name=\"presentableId\" value=\"Default\" />\n      <updated>1717232944332</updated>\n      <workItem from=\"1717232945453\" duration=\"3516000\" />\n      <workItem from=\"1717708445704\" duration=\"39000\" />\n      <workItem from=\"1717708502003\" duration=\"17612000\" />\n      <workItem from=\"1718829506720\" duration=\"9846000\" />\n      <workItem from=\"1719393517858\" duration=\"262000\" />\n      <workItem from=\"1719396800091\" duration=\"698000\" />\n      <workItem from=\"1719588738897\" duration=\"6970000\" />\n      <workItem from=\"1719656972436\" duration=\"24465000\" />\n      <workItem from=\"1719767925897\" duration=\"43000\" />\n      <workItem from=\"1719767980073\" duration=\"5000\" />\n      <workItem from=\"1719768052183\" duration=\"5000\" />\n      <workItem from=\"1719768099151\" duration=\"1840000\" />\n      <workItem from=\"1719837172685\" duration=\"17710000\" />\n      <workItem from=\"1719958524794\" duration=\"1874000\" />\n      <workItem from=\"1719960437156\" duration=\"6070000\" />\n      <workItem from=\"1720036370427\" duration=\"10969000\" />\n      <workItem from=\"1720085023138\" duration=\"92000\" />\n      <workItem from=\"1720085125743\" duration=\"18942000\" />\n      <workItem from=\"1720291859916\" duration=\"6000\" />\n      <workItem from=\"1720291872150\" duration=\"13399000\" />\n      <workItem from=\"1720876680351\" duration=\"952000\" />\n      <workItem from=\"1720887754813\" duration=\"604000\" />\n    </task>\n    <task id=\"LOCAL-00001\" summary=\"Changed project name and executables on CMake list\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1717708735457</created>\n      <option name=\"number\" value=\"00001\" />\n      <option name=\"presentableId\" value=\"LOCAL-00001\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1717708735457</updated>\n    </task>\n    <task id=\"LOCAL-00002\" summary=\"Changed project name and executables on CMake list\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1719592206042</created>\n      <option name=\"number\" value=\"00002\" />\n      <option name=\"presentableId\" value=\"LOCAL-00002\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1719592206043</updated>\n    </task>\n    <task id=\"LOCAL-00003\" summary=\"New file ballDetector\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1719592527365</created>\n      <option name=\"number\" value=\"00003\" />\n      <option name=\"presentableId\" value=\"LOCAL-00003\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1719592527365</updated>\n    </task>\n    <task id=\"LOCAL-00004\" summary=\"New file ballDetector\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1719593472694</created>\n      <option name=\"number\" value=\"00004\" />\n      <option name=\"presentableId\" value=\"LOCAL-00004\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1719593472694</updated>\n    </task>\n    <task id=\"LOCAL-00005\" summary=\"Improvements on ball_detection.cpp&#10;Better table cloth segmentation&#10;Shadows attenuation&#10;Introduced the binary thresholding to the table mask&#10;Better tuning of HoughCircle\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1719767712605</created>\n      <option name=\"number\" value=\"00005\" />\n      <option name=\"presentableId\" value=\"LOCAL-00005\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1719767712605</updated>\n    </task>\n    <task id=\"LOCAL-00006\" summary=\"Improvements on ball_detection.cpp&#10;Better table cloth segmentation&#10;Shadows attenuation&#10;Introduced the binary thresholding to the table mask&#10;Better tuning of HoughCircle\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1720082784984</created>\n      <option name=\"number\" value=\"00006\" />\n      <option name=\"presentableId\" value=\"LOCAL-00006\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1720082784984</updated>\n    </task>\n    <task id=\"LOCAL-00007\" summary=\"Improvements on ball_detection.cpp&#10;Better table cloth segmentation&#10;Shadows attenuation&#10;Introduced the binary thresholding to the table mask&#10;Better tuning of HoughCircle\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1720085204379</created>\n      <option name=\"number\" value=\"00007\" />\n      <option name=\"presentableId\" value=\"LOCAL-00007\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1720085204379</updated>\n    </task>\n    <task id=\"LOCAL-00008\" summary=\"Improvements on ball_detection.cpp&#10;Better table cloth segmentation&#10;Shadows attenuation&#10;Introduced the binary thresholding to the table mask&#10;Better tuning of HoughCircle\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1720085334595</created>\n      <option name=\"number\" value=\"00008\" />\n      <option name=\"presentableId\" value=\"LOCAL-00008\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1720085334595</updated>\n    </task>\n    <option name=\"localTasksCounter\" value=\"9\" />\n    <servers />\n  </component>\n  <component name=\"TypeScriptGeneratedFilesManager\">\n    <option name=\"version\" value=\"3\" />\n  </component>\n  <component name=\"VCPKGProject\">\n    <isAutomaticCheckingOnLaunch value=\"false\" />\n    <isAutomaticFoundErrors value=\"true\" />\n    <isAutomaticReloadCMake value=\"true\" />\n  </component>\n  <component name=\"Vcs.Log.Tabs.Properties\">\n    <option name=\"TAB_STATES\">\n      <map>\n        <entry key=\"MAIN\">\n          <value>\n            <State />\n          </value>\n        </entry>\n      </map>\n    </option>\n  </component>\n  <component name=\"VcsManagerConfiguration\">\n    <option name=\"ADD_EXTERNAL_FILES_SILENTLY\" value=\"true\" />\n    <MESSAGE value=\"Changed project name and executables on CMake list\" />\n    <MESSAGE value=\"New file ballDetector\" />\n    <MESSAGE value=\"Improvements on ball_detection.cpp&#10;Better table cloth segmentation&#10;Shadows attenuation&#10;Introduced the binary thresholding to the table mask&#10;Better tuning of HoughCircle\" />\n    <option name=\"LAST_COMMIT_MESSAGE\" value=\"Improvements on ball_detection.cpp&#10;Better table cloth segmentation&#10;Shadows attenuation&#10;Introduced the binary thresholding to the table mask&#10;Better tuning of HoughCircle\" />\n  </component>\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision 659da0519390cd8dcffb48b7a3bdc1ba00ca5e1c)
++++ b/.idea/workspace.xml	(date 1721146298020)
+@@ -18,14 +18,10 @@
+     </configurations>
+   </component>
+   <component name="ChangeListManager">
+-    <list default="true" id="948c52e5-9aa5-406e-97f5-4634cd50793c" name="Changes" comment="Improvements on ball_detection.cpp&#10;Better table cloth segmentation&#10;Shadows attenuation&#10;Introduced the binary thresholding to the table mask&#10;Better tuning of HoughCircle">
+-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_04_07_24,_10_46_[Changes]/shelved.patch" beforeDir="false" />
+-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_04_07_24__10_46__Changes_.xml" beforeDir="false" />
+-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_30_06_24,_19_16_[Changes]/shelved.patch" beforeDir="false" />
+-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_30_06_24__19_16__Changes_.xml" beforeDir="false" />
++    <list default="true" id="948c52e5-9aa5-406e-97f5-4634cd50793c" name="Changes" comment="Improving field detection and implementation of homography">
+       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-Debug-log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-Debug-log.txt" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/src/field_detection.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/field_detection.cpp" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+@@ -71,6 +67,7 @@
+     &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+     &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
++    &quot;last_opened_file_path&quot;: &quot;/Users/crucio/CLionProjects/Sport-video-analysis-for-billiard-matches/data&quot;,
+     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+@@ -80,8 +77,18 @@
+     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+   }
+ }</component>
++  <component name="RecentsManager">
++    <key name="CopyFile.RECENT_KEYS">
++      <recent name="$PROJECT_DIR$/data" />
++    </key>
++  </component>
+   <component name="RunManager">
+-    <configuration name="BiliardVideoAnalysis" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="$PROJECT_DIR$/data/Field_Masks $USER_HOME$/Documents/UNIPD/CSE/First_Year/Computer_Vision/Project/Detecting_Circles/results &quot;*.png&quot;" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Project" TARGET_NAME="BiliardVideoAnalysis" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="Project" RUN_TARGET_NAME="BiliardVideoAnalysis">
++    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
++      <method v="2">
++        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
++      </method>
++    </configuration>
++    <configuration name="BiliardVideoAnalysis" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="$PROJECT_DIR$/data/Field_Masks $USER_HOME$/Documents/UNIPD/CSE/First_Year/Computer_Vision/Project/Detecting_Circles/results &quot;*.png&quot;" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Project" TARGET_NAME="BiliardVideoAnalysis" RUN_TARGET_PROJECT_NAME="Project" RUN_TARGET_NAME="BiliardVideoAnalysis">
+       <method v="2">
+         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+       </method>
+@@ -117,6 +124,8 @@
+       <workItem from="1720291872150" duration="13399000" />
+       <workItem from="1720876680351" duration="952000" />
+       <workItem from="1720887754813" duration="604000" />
++      <workItem from="1721039261859" duration="2159000" />
++      <workItem from="1721123857725" duration="6049000" />
+     </task>
+     <task id="LOCAL-00001" summary="Changed project name and executables on CMake list">
+       <option name="closed" value="true" />
+@@ -182,7 +191,23 @@
+       <option name="project" value="LOCAL" />
+       <updated>1720085334595</updated>
+     </task>
+-    <option name="localTasksCounter" value="9" />
++    <task id="LOCAL-00009" summary="Improving field detection and implementation of homography">
++      <option name="closed" value="true" />
++      <created>1721039525307</created>
++      <option name="number" value="00009" />
++      <option name="presentableId" value="LOCAL-00009" />
++      <option name="project" value="LOCAL" />
++      <updated>1721039525307</updated>
++    </task>
++    <task id="LOCAL-00010" summary="Improving field detection and implementation of homography">
++      <option name="closed" value="true" />
++      <created>1721039624250</created>
++      <option name="number" value="00010" />
++      <option name="presentableId" value="LOCAL-00010" />
++      <option name="project" value="LOCAL" />
++      <updated>1721039624250</updated>
++    </task>
++    <option name="localTasksCounter" value="11" />
+     <servers />
+   </component>
+   <component name="TypeScriptGeneratedFilesManager">
+@@ -209,6 +234,7 @@
+     <MESSAGE value="Changed project name and executables on CMake list" />
+     <MESSAGE value="New file ballDetector" />
+     <MESSAGE value="Improvements on ball_detection.cpp&#10;Better table cloth segmentation&#10;Shadows attenuation&#10;Introduced the binary thresholding to the table mask&#10;Better tuning of HoughCircle" />
+-    <option name="LAST_COMMIT_MESSAGE" value="Improvements on ball_detection.cpp&#10;Better table cloth segmentation&#10;Shadows attenuation&#10;Introduced the binary thresholding to the table mask&#10;Better tuning of HoughCircle" />
++    <MESSAGE value="Improving field detection and implementation of homography" />
++    <option name="LAST_COMMIT_MESSAGE" value="Improving field detection and implementation of homography" />
+   </component>
+ </project>
+\ No newline at end of file

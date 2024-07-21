@@ -2,42 +2,6 @@
 	"entries" : 
 	[
 		{
-			"name" : "BiliardVideoAnalysis_BINARY_DIR",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : "Value Computed by CMake"
-				}
-			],
-			"type" : "STATIC",
-			"value" : "/Users/Administrator/CLionProjects/Sport-video-analysis-for-billiard-matches/cmake-build-debug"
-		},
-		{
-			"name" : "BiliardVideoAnalysis_IS_TOP_LEVEL",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : "Value Computed by CMake"
-				}
-			],
-			"type" : "STATIC",
-			"value" : "ON"
-		},
-		{
-			"name" : "BiliardVideoAnalysis_SOURCE_DIR",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : "Value Computed by CMake"
-				}
-			],
-			"type" : "STATIC",
-			"value" : "/Users/Administrator/CLionProjects/Sport-video-analysis-for-billiard-matches"
-		},
-		{
 			"name" : "CMAKE_ADDR2LINE",
 			"properties" : 
 			[
@@ -91,7 +55,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/Users/Administrator/CLionProjects/Sport-video-analysis-for-billiard-matches/cmake-build-debug"
+			"value" : "/Users/crucio/CLionProjects/Sport-video-analysis-for-billiard-matches/cmake-build-debug"
 		},
 		{
 			"name" : "CMAKE_CACHE_MAJOR_VERSION",
@@ -515,7 +479,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/Users/Administrator/CLionProjects/Sport-video-analysis-for-billiard-matches/cmake-build-debug/CMakeFiles/pkgRedirects"
+			"value" : "/Users/crucio/CLionProjects/Sport-video-analysis-for-billiard-matches/cmake-build-debug/CMakeFiles/pkgRedirects"
 		},
 		{
 			"name" : "CMAKE_GENERATOR",
@@ -575,7 +539,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/Users/Administrator/CLionProjects/Sport-video-analysis-for-billiard-matches"
+			"value" : "/Users/crucio/CLionProjects/Sport-video-analysis-for-billiard-matches"
 		},
 		{
 			"name" : "CMAKE_INSTALL_NAME_TOOL",
@@ -591,7 +555,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/Users/Administrator/anaconda3/bin/install_name_tool"
+			"value" : "/usr/bin/install_name_tool"
 		},
 		{
 			"name" : "CMAKE_INSTALL_PREFIX",
@@ -807,7 +771,7 @@
 				}
 			],
 			"type" : "PATH",
-			"value" : "/Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk"
+			"value" : "/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk"
 		},
 		{
 			"name" : "CMAKE_PLATFORM_INFO_INITIALIZED",
@@ -855,7 +819,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "BiliardVideoAnalysis"
+			"value" : "Sport-video-analysis-for-billiard-matches"
 		},
 		{
 			"name" : "CMAKE_RANLIB",
@@ -1163,19 +1127,43 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "[/opt/homebrew/Cellar/opencv/4.9.0_5][v4.9.0()]"
+			"value" : "[/opt/homebrew/Cellar/opencv/4.9.0_11.reinstall][v4.9.0()]"
 		},
 		{
-			"name" : "OpenCV_DIR",
+			"name" : "Sport-video-analysis-for-billiard-matches_BINARY_DIR",
 			"properties" : 
 			[
 				{
 					"name" : "HELPSTRING",
-					"value" : "The directory containing a CMake configuration file for OpenCV."
+					"value" : "Value Computed by CMake"
 				}
 			],
-			"type" : "PATH",
-			"value" : "/opt/homebrew/lib/cmake/opencv4"
+			"type" : "STATIC",
+			"value" : "/Users/crucio/CLionProjects/Sport-video-analysis-for-billiard-matches/cmake-build-debug"
+		},
+		{
+			"name" : "Sport-video-analysis-for-billiard-matches_IS_TOP_LEVEL",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Value Computed by CMake"
+				}
+			],
+			"type" : "STATIC",
+			"value" : "ON"
+		},
+		{
+			"name" : "Sport-video-analysis-for-billiard-matches_SOURCE_DIR",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Value Computed by CMake"
+				}
+			],
+			"type" : "STATIC",
+			"value" : "/Users/crucio/CLionProjects/Sport-video-analysis-for-billiard-matches"
 		}
 	],
 	"kind" : "cache",
