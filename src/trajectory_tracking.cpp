@@ -6,10 +6,12 @@
 #include <cstring>
 #include "../include/ball_detection.hpp"
 #include "../include/field_detection.h"
+#include "../include/trajectory_tracking.h"
+#include "../include/homography.h"
 using namespace cv;
 using namespace std;
 
-void tracking_balls(vector<Mat>& all_video_frames, vector<billiardBall>& balls) 
+void tracking_balls(std::vector<cv::Mat>& all_video_frames, std::vector<billiardBall>& balls, cv::Mat& H) 
 {
 	vector<Ptr<TrackerCSRT>> trackers;
     vector<Rect> rois;
@@ -50,35 +52,48 @@ void tracking_balls(vector<Mat>& all_video_frames, vector<billiardBall>& balls)
         // Draw the rectangles on the current frame
         Mat display_frame = frame.clone();
 		Mat overlayImage = imread("../data/Top_View.jpg",IMREAD_ANYCOLOR);
+		vector<Point> old_points;
+		vector<Point> new_points;
+		for(int i = 0; i < tracked_rects.size(); i++)
+			old_points.emplace_back(tracked_rects[i].x+tracked_rects[i].width/2,tracked_rects[i].y+tracked_rects[i].height/2);
+
+		mapPoints(H,old_points,new_points);
+
+
+		// Draw the balls in thetracked_rects[i].x+tracked_rects[i].width, topview image
+
+		Mat baseImage = display_frame;
+		for(int i = 0; i < new_points.size(); i++)
+			circle(overlayImage,new_points[i],3,Scalar(0,255,0),5);
+			Mat resizedOverlay;
+			resize(overlayImage, resizedOverlay, cv::Size(baseImage.cols / 3, baseImage.rows / 3));
+
+		//imshow("TopView",overlayImage);	
         for (const Rect& rect : tracked_rects) {
-		if (overlayImage.empty()) {
-        std::cerr << "Could not open or find the images!" << std::endl;
-    }	
+            if (rect.width > 0 && rect.height > 0) { // Ensure valid rectangles
+                rectangle(display_frame, rect, Scalar(0, 0, 255), 2);
+            }
+
+			// here we have to overlay the image
+
 			// Resize overlay image if needed
 			// For example, resize overlay image to be a quarter of the base image size
-			cv::Mat resizedOverlay;
-			cv::resize(overlayImage, resizedOverlay, cv::Size(display_frame.cols / 2, display_frame.rows / 2));
-
 			// Define ROI on base image where overlay image will be placed (top-left corner here)
-			cv::Rect roi(0, display_frame.rows-resizedOverlay.rows,resizedOverlay.cols, resizedOverlay.rows); // Adjust position and size as needed
+			Rect roi(0,display_frame.rows-resizedOverlay.rows, resizedOverlay.cols, resizedOverlay.rows); // Adjust position and size as needed
 
 			// Check if ROI is within the base image bounds
-			if (roi.x + roi.width > display_frame.cols || roi.y + roi.height > display_frame.rows) {
+			if (roi.x + roi.width > baseImage.cols || roi.y + roi.height > baseImage.rows) {
 				std::cerr << "Overlay image exceeds base image bounds!" << std::endl;
 			}
 
 			// Place overlay image on base image
-			cv::Mat baseROI = display_frame(roi); // Define the region of interest on the base image
-			resizedOverlay.copyTo(baseROI);  // Copy the overlay image onto the base image
+			Mat baseROI = baseImage(roi); // Define the region of interest on the base image
+			resizedOverlay.copyTo(baseROI);  // Copy the overlay image onto the base image	
+			}
 
-            if (rect.width > 0 && rect.height > 0) { // Ensure valid rectangles
-                rectangle(display_frame, rect, Scalar(0, 0, 255), 2);
-            }
-        }
-
-        // Display the frame with tracked rectangles
-        imshow("Multi-object Tracker", display_frame);
-        if (waitKey(30) == 27) break;  // Exit on ESC key
+			// Display the frame with tracked rectangles
+			imshow("Multi-object Tracker", display_frame);
+			if (waitKey(30) == 27) break;  // Exit on ESC key
     }
 
     destroyAllWindows();

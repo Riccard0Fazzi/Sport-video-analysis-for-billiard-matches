@@ -3,6 +3,9 @@
 
 cv::Mat computeHomography(const std::vector<cv::Point>& points) {
 	std::vector<cv::Point> tvp;
+	std::vector<cv::Point> points_copy;
+	for(int i = 0; i < points.size()-1; i++)
+		points_copy.push_back(points[i]);
     std::vector<cv::Point> top_view_corners;
     // Define the 2D top-view corners in order: Upper-Left, Upper-Right, Bottom-Left, Bottom-Right
     top_view_corners = {cv::Point (62,79),
@@ -26,7 +29,8 @@ cv::Mat computeHomography(const std::vector<cv::Point>& points) {
 	}
 
 	// Compute homography matrix
-	return cv::findHomography(points, tvp);
+	
+	return cv::findHomography(points_copy, tvp);
 }
 
 void mapPoints(const cv::Mat H, const std::vector<cv::Point>& input_points, std::vector<cv::Point>& output_points) {

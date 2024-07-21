@@ -72,7 +72,8 @@ int main(int argc, char** argv) {
 		// PARAM: Mat object containing the cropped table
 		balls =	ball_detection(cropped_field, field_points[field_points.size()-1]);
 
-		tracking_balls(video_frames,balls);
+	Mat	H = computeHomography(field_points);
+		tracking_balls(video_frames,balls,H);
 		//classify(balls,cropped_field);
         /*
 		namedWindow("Balls");
@@ -83,7 +84,6 @@ int main(int argc, char** argv) {
 		}*/
 		
 		//-- Field homography --
-		//H = homography(field_points);
 
 		//mapPoints(H,field_points,cv::Scalar(255,0,0));
 		// test homography for balls

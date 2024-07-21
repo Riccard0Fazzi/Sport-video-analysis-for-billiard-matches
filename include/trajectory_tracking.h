@@ -20,7 +20,7 @@
  * @return a vector of frames with the bounding boxes.
  */
 
-void tracking_balls(std::vector<cv::Mat>& all_video_frames, std::vector<billiardBall>& balls); 
+void tracking_balls(std::vector<cv::Mat>& all_video_frames, std::vector<billiardBall>& balls, cv::Mat& H); 
 
 #endif // TRAJECTORY_TRACKING_H
 
