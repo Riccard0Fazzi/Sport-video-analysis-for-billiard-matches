@@ -49,7 +49,28 @@ void tracking_balls(vector<Mat>& all_video_frames, vector<billiardBall>& balls)
 
         // Draw the rectangles on the current frame
         Mat display_frame = frame.clone();
+		Mat overlayImage = imread("../data/Top_View.jpg",IMREAD_ANYCOLOR);
         for (const Rect& rect : tracked_rects) {
+		if (overlayImage.empty()) {
+        std::cerr << "Could not open or find the images!" << std::endl;
+    }	
+			// Resize overlay image if needed
+			// For example, resize overlay image to be a quarter of the base image size
+			cv::Mat resizedOverlay;
+			cv::resize(overlayImage, resizedOverlay, cv::Size(display_frame.cols / 2, display_frame.rows / 2));
+
+			// Define ROI on base image where overlay image will be placed (top-left corner here)
+			cv::Rect roi(0, display_frame.rows-resizedOverlay.rows,resizedOverlay.cols, resizedOverlay.rows); // Adjust position and size as needed
+
+			// Check if ROI is within the base image bounds
+			if (roi.x + roi.width > display_frame.cols || roi.y + roi.height > display_frame.rows) {
+				std::cerr << "Overlay image exceeds base image bounds!" << std::endl;
+			}
+
+			// Place overlay image on base image
+			cv::Mat baseROI = display_frame(roi); // Define the region of interest on the base image
+			resizedOverlay.copyTo(baseROI);  // Copy the overlay image onto the base image
+
             if (rect.width > 0 && rect.height > 0) { // Ensure valid rectangles
                 rectangle(display_frame, rect, Scalar(0, 0, 255), 2);
             }
