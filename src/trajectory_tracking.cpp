@@ -15,7 +15,8 @@ void tracking_balls(std::vector<cv::Mat>& all_video_frames, std::vector<billiard
 {
 	vector<Ptr<TrackerCSRT>> trackers;
     vector<Rect> rois;
-
+	vector<Mat> output_images;
+	
 	vector<billiardBall> balls_copy;
 	vector<Mat> video_frames_copy;
 	for(int j = 0; j < all_video_frames.size(); j++)
@@ -93,9 +94,10 @@ void tracking_balls(std::vector<cv::Mat>& all_video_frames, std::vector<billiard
 
 			// Display the frame with tracked rectangles
 			imshow("Multi-object Tracker", display_frame);
+			output_images.push_back(display_frame);
 			if (waitKey(30) == 27) break;  // Exit on ESC key
+			
     }
-
     destroyAllWindows();
 }
 

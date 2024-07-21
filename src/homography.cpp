@@ -8,10 +8,10 @@ cv::Mat computeHomography(const std::vector<cv::Point>& points) {
 		points_copy.push_back(points[i]);
     std::vector<cv::Point> top_view_corners;
     // Define the 2D top-view corners in order: Upper-Left, Upper-Right, Bottom-Left, Bottom-Right
-    top_view_corners = {cv::Point (62,79),
-                        cv::Point (453,79),
-                        cv::Point (62,282),
-                        cv::Point (453,282)};
+    top_view_corners = {cv::Point (18,18),
+                        cv::Point (409,18),
+                        cv::Point (18,220),
+                        cv::Point (409,220)};
 
     // If the table satisfies the following condition, then it is selected as vertical table
 	if(points[3].x - points[2].x > points[1].x - points[0].x +20){

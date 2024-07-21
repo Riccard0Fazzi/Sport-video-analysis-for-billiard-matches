@@ -10,9 +10,9 @@ billiardBall::billiardBall(int x, int y, double true_radius, int id, cv::Mat& ba
 }
 
 void billiardBall::createBoundingBox(cv::Point offset) {
-        int x_corner = this->x - static_cast<int>(this->true_radius)*1.5 + offset.x;
-        int y_corner = this->y - static_cast<int>(this->true_radius)*1.5 + offset.y;
-        box = cv::Rect (x_corner, y_corner, 3 * static_cast<int>(this->true_radius), 3 * static_cast<int>(this->true_radius));
+        int x_corner = this->x - static_cast<int>(this->true_radius) + offset.x;
+        int y_corner = this->y - static_cast<int>(this->true_radius) + offset.y;
+        box = cv::Rect (x_corner, y_corner, 2.5 * static_cast<int>(this->true_radius),2.5 * static_cast<int>(this->true_radius));
     }
 
 
