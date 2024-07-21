@@ -243,6 +243,10 @@ std::vector<cv::Point> field_detection(const cv::Mat& inputImage, Mat & cropped_
 	//CROP FIELD MASK
 	Rect bounding_box;
 	bounding_box = boundingRect(contours[1]);
+	int offset_x = bounding_box.x;
+	int offset_y = bounding_box.y;
+	Point offset(offset_x,offset_y);
+	center_points.push_back(offset);
 	// Crop the image using the bounding box
 	cropped_field = img(bounding_box);
 	Mat temp_cropped_field;

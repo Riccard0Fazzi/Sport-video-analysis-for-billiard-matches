@@ -8,6 +8,7 @@
 #include <opencv2/highgui.hpp>
 #include <iostream>
 #include <cstring>
+#include "ball_detection.hpp"
 
 // Declare function prototypes
 
@@ -18,8 +19,8 @@
  * @param inputImage The input image in which the field is to be detected.
  * @return a vector of frames with the bounding boxes.
  */
-std::vector<cv::Mat> detectField(const cv::Mat& inputImage);
 
+void tracking_balls(std::vector<cv::Mat>& all_video_frames, std::vector<billiardBall>& balls); 
 
 #endif // TRAJECTORY_TRACKING_H
 
