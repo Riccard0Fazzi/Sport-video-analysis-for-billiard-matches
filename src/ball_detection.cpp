@@ -9,8 +9,15 @@ billiardBall::billiardBall(int x, int y, double true_radius, int id, cv::Mat& ba
     // Optionally, you can add additional initialization logic here if needed
 }
 
+void billiardBall::createBoundingBox(cv::Point offset) {
+        int x_corner = this->x - static_cast<int>(this->true_radius)*1.5 + offset.x;
+        int y_corner = this->y - static_cast<int>(this->true_radius)*1.5 + offset.y;
+        box = cv::Rect (x_corner, y_corner, 3 * static_cast<int>(this->true_radius), 3 * static_cast<int>(this->true_radius));
+    }
 
-std::vector<billiardBall> ball_detection(const cv::Mat& inputImage)
+
+
+std::vector<billiardBall> ball_detection(const cv::Mat& inputImage, Point offset)
 {
 
     Mat img = inputImage.clone();
@@ -31,6 +38,7 @@ std::vector<billiardBall> ball_detection(const cv::Mat& inputImage)
  	std::vector<billiardBall> balls; // vector of object balls
     for(int i =0;i<circles.size();i++){
         balls.emplace_back(circles[i][0],circles[i][1],circles[i][2],-1,circles_images[i]); // -1 NOT ASSIGNED YET
+		balls[i].createBoundingBox(offset);
     }
     // REMOVE FALSE POSITIVES
     discardFalsePositives(img,centers_window,balls);

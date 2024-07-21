@@ -4,6 +4,7 @@
 #include "../include/ball_detection.hpp"
 #include "../include/homography.h"
 #include "../include/classifier.h"
+#include "../include/trajectory_tracking.h"
 using namespace cv;
 using namespace std;
 int main(int argc, char** argv) {
@@ -49,6 +50,7 @@ int main(int argc, char** argv) {
 		// Release the video capture object
 		cap.release();
 
+		cout << "Num of video frames in main: " << video_frames.size() << endl;
 
 		// -- Field detection --
 			
@@ -68,7 +70,9 @@ int main(int argc, char** argv) {
 		// Takes as input the cropped mask of the billiard table, to detect the balls
 		// RETURN: vector of object billiardBall
 		// PARAM: Mat object containing the cropped table
-		balls =	ball_detection(cropped_field);
+		balls =	ball_detection(cropped_field, field_points[field_points.size()-1]);
+
+		tracking_balls(video_frames,balls);
 		//classify(balls,cropped_field);
         /*
 		namedWindow("Balls");

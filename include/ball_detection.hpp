@@ -13,8 +13,10 @@ struct billiardBall {
 	double true_radius;
     int id;
 	cv::Mat ballImage;
-
+	cv::Rect box; // bounding box 
 	billiardBall(int x, int y, double true_radius,  int id, cv::Mat& ballImage);
+	void createBoundingBox(cv::Point offset);
+
     // Custom destructor to free the allocated resource
     ~billiardBall() {
         ballImage.release();
@@ -77,7 +79,7 @@ void ballSelection(const cv::Mat& img, const std::vector<cv::Vec3f>& circle_vect
 
 void ballDetection(const cv::Mat& img, std::vector<cv::Vec3f>& circles);
 
-std::vector<billiardBall> ball_detection(const cv::Mat& inputImage);
+std::vector<billiardBall> ball_detection(const cv::Mat& inputImagei, cv::Point offset);
 
 // Draws the circles present on the vector 'circles'.
 void drawCircles(const cv::Mat& img, cv::Mat& circles_img, const std::vector<cv::Vec3f>& circles);
