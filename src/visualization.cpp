@@ -1,5 +1,5 @@
 #include "ball_detection.hpp"
-#include "visualization.hpp"
+#include "visualization.h"
 
 void drawBallsOnTopView(const std::vector<billiardBall>& balls, cv::Mat& top_view) {
     // Read the top-view image from the data folder
