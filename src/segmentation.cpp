@@ -1,5 +1,4 @@
-#include "ball_detection.hpp"
-#include "segmentation.h"
+#include "../include/segmentation.h"
 
 void segmentation(const cv::Mat& image, const std::vector<cv::Point>& field_points, const std::vector<billiardBall>& balls, cv::Mat& segmented_image) {
     // Copy the original image to the segmented one in order to apply the table and balls shapes

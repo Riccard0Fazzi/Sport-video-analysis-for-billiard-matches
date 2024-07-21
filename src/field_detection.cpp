@@ -1,5 +1,4 @@
 #include "../include/field_detection.h"
-#include "../include/ball_detection.hpp"
 
 using namespace cv;
 using namespace std;
@@ -266,7 +265,8 @@ std::vector<cv::Point> field_detection(const cv::Mat& inputImage, Mat & cropped_
 	
 	cropped_field.setTo(rgb_mat.at<Vec3b>(1,1),mask_black);
 
-
+	
+	imwrite("../data/Report_images/field.png",cropped_field);
 
 	//imshow("CropField",cropped_field);
 	//waitKey(0);

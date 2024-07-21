@@ -1,4 +1,4 @@
-#include "ball_detection.hpp"
+#include "../include/ball_detection.h"
 using namespace cv;
 using namespace std;
 
@@ -50,9 +50,6 @@ std::vector<billiardBall> ball_detection(const cv::Mat& inputImage, Point offset
         circle(detected_balls,center,balls[i].true_radius,Scalar(0, 255, 0),2, LINE_AA);
     }
 
-    imshow("DETECTED BALLS",detected_balls);
-    waitKey(0);
-	//destroyAllWindows();
     return balls;
 }
 

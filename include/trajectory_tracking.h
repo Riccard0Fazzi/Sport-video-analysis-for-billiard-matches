@@ -8,7 +8,9 @@
 #include <opencv2/highgui.hpp>
 #include <iostream>
 #include <cstring>
-#include "ball_detection.hpp"
+#include "ball_detection.h"
+#include "field_detection.h"
+#include "homography.h"
 
 // Declare function prototypes
 

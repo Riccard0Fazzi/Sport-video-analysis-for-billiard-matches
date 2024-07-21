@@ -3,16 +3,8 @@
 
 #include <iostream>
 #include <opencv2/opencv.hpp>
-#include "ball_detection.hpp"
+#include "ball_detection.h"
 
-struct ballBoundingBox {
-    cv::Rect bbox;
-    int id;
-
-    ballBoundingBox(cv::Rect& bbox, int id);
-
-    ~ballBoundingBox() {}
-};
 
 struct colors {
     cv::Scalar white;
@@ -24,6 +16,5 @@ struct colors {
     cv::Scalar field_border;
 };
 
-void createBoundingBoxes(const std::vector<billiardBall>& balls, std::vector<ballBoundingBox>& bboxes);
-
+void createBoundingBoxes(const std::vector<billiardBall>& balls, cv::Mat& field_image, cv::Mat& field_bounding_box); 
 #endif //SPORT_VIDEO_ANALYSIS_FOR_BILLIARD_MATCHES_BOUNDING_BOX_H

@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <opencv2/opencv.hpp>
-#include "ball_detection.hpp"
+#include "ball_detection.h"
 
 struct colors {
     cv::Scalar white;

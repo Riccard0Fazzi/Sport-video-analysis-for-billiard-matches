@@ -1,6 +1,6 @@
 // Created by Tommaso Tubaldo on 18/07/24 - Hours:
 
-#include "performance.h"
+#include "../include/performance.h"
 
 void readImagesAndBBoxes(const std::string& folder_path, std::vector<cv::Mat>& frames, std::vector<cv::Mat>& masks, std::vector<std::vector<BoundingBox>>& bounding_boxes) {
     // Paths to the inner folders

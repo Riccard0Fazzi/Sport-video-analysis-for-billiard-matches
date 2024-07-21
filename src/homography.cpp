@@ -1,5 +1,4 @@
-#include "ball_detection.hpp"
-#include "homography.h"
+#include "../include/homography.h"
 
 cv::Mat computeHomography(const std::vector<cv::Point>& points) {
 	std::vector<cv::Point> tvp;

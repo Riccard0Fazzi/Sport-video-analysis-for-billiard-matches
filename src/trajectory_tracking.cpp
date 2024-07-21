@@ -4,7 +4,7 @@
 #include <opencv2/highgui.hpp>
 #include <iostream>
 #include <cstring>
-#include "../include/ball_detection.hpp"
+#include "../include/ball_detection.h"
 #include "../include/field_detection.h"
 #include "../include/trajectory_tracking.h"
 #include "../include/homography.h"
@@ -16,6 +16,8 @@ void tracking_balls(std::vector<cv::Mat>& all_video_frames, std::vector<billiard
 	vector<Ptr<TrackerCSRT>> trackers;
     vector<Rect> rois;
 	vector<Mat> output_images;
+	vector<vector<Point>> trajectory_lines;
+	trajectory_lines.resize(balls.size());
 	
 	vector<billiardBall> balls_copy;
 	vector<Mat> video_frames_copy;
@@ -27,7 +29,6 @@ void tracking_balls(std::vector<cv::Mat>& all_video_frames, std::vector<billiard
 		balls_copy.push_back(balls[j]);
 		rois.push_back(balls[j].box);
 	}
-    
     // Initialize trackers with the first frame and initial rectangles
     for (int i = 0; i < balls_copy.size(); i++) {
         Ptr<TrackerCSRT> tracker = TrackerCSRT::create();
@@ -35,16 +36,15 @@ void tracking_balls(std::vector<cv::Mat>& all_video_frames, std::vector<billiard
         tracker->init(video_frames_copy[0], balls_copy[i].box);
         trackers.push_back(tracker);
     }
-
-    // Iterate through the video frames and update trackers
+	int big_index = 0;
+    // Iterate through the video frames and update trackers ------------------------- for each frame
     for (const Mat& frame : video_frames_copy) {
         vector<Rect> tracked_rects;
-
         for (size_t i = 0; i < trackers.size(); ++i) {
 
             bool success = trackers[i]->update(frame, rois[i]);
             if (success) {
-                tracked_rects.push_back(rois[i]);  // Convert Rect2d to Rect
+                tracked_rects.push_back(rois[i]); 
             } else {
                 tracked_rects.push_back(Rect()); // Placeholder or empty Rect
             }
@@ -60,19 +60,29 @@ void tracking_balls(std::vector<cv::Mat>& all_video_frames, std::vector<billiard
 
 		mapPoints(H,old_points,new_points);
 
+		for(int i = 0; i < new_points.size(); i++)
+			trajectory_lines[i].emplace_back(new_points[i]); // store the initial points of all coordinates
 
-		// Draw the balls in thetracked_rects[i].x+tracked_rects[i].width, topview image
+		// Draw the balls in the topview image
 
 		Mat baseImage = display_frame;
+
+		int index = 0;
 		for(int i = 0; i < new_points.size(); i++)
+		{
 			circle(overlayImage,new_points[i],3,Scalar(0,255,0),5);
-			Mat resizedOverlay;
-			resize(overlayImage, resizedOverlay, cv::Size(baseImage.cols / 3, baseImage.rows / 3));
+			for(const Point& point : trajectory_lines[index])
+				circle(overlayImage,point,1,Scalar(255,255,255),1);
+			index++;
+		}
+		
+		Mat resizedOverlay;
+		resize(overlayImage, resizedOverlay, cv::Size(baseImage.cols / 3, baseImage.rows / 3));
 
 		//imshow("TopView",overlayImage);	
         for (const Rect& rect : tracked_rects) {
             if (rect.width > 0 && rect.height > 0) { // Ensure valid rectangles
-                rectangle(display_frame, rect, Scalar(0, 0, 255), 2);
+                rectangle(display_frame, rect, Scalar(0, 0, 255),2);
             }
 
 			// here we have to overlay the image
@@ -94,10 +104,12 @@ void tracking_balls(std::vector<cv::Mat>& all_video_frames, std::vector<billiard
 
 			// Display the frame with tracked rectangles
 			imshow("Multi-object Tracker", display_frame);
-			output_images.push_back(display_frame);
 			if (waitKey(30) == 27) break;  // Exit on ESC key
-			
+			big_index++;
     }
+	trajectory_lines.clear();
+
+
     destroyAllWindows();
 }
 

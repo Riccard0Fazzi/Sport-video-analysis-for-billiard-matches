@@ -7,6 +7,7 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/utils/filesystem.hpp>
+#include "ball_detection.h"
 
 // Given a set of 4 points, it computes the homography transformation associated
 cv::Mat computeHomography(const std::vector<cv::Point>& points);
