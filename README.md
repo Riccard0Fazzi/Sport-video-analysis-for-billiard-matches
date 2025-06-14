@@ -1,6 +1,6 @@
 # Billiard Match Video Analysis
 
-Didattic project with the objective of creating a computer vision system capable of analysing a "8-Ball" Billiard matches, providing high-level information and displaying it on a 2-D top view minimap.
+Didattic project with the objective of creating a computer vision system capable of analysing "8-Ball" Billiard matches, providing high-level information and displaying it on a 2-D top view minimap.
 
 The resulting system is capable of the following tasks:
 - Segmentation of the playing field
